@@ -1,4 +1,4 @@
-import os
+from example.commoncode.my import common_func
 
 for line in `ls -l | grep shell`:
     print `echo LINE IS: {line}
@@ -9,5 +9,4 @@ if s.returncode == 0:
 else:
     print 'string not found'
 
-from example.commoncode.my import common_func
 print common_func()
