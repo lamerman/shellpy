@@ -1,18 +1,13 @@
 import os
+
+for line in `ls -l | grep shell`:
+    print `echo LINE IS: {line}
+
+s = `ls -l | grep non_existent_string
+if s.returncode == 0:
+    print 'string found'
+else:
+    print 'string not found'
+
 from example.commoncode.my import common_func
-
-def main():
-    for line in `ls -l`:
-        s = `echo piggibank: {line} | grep shellpy
-        if len(str(s)) > 0:
-            print s
-            print s.returncode
-
-    print `echo 1` == `echo 1`
-
-    print `ls -l
-    print os.ST_APPEND
-    print common_func()
-
-if __name__ == '__main__':
-    main()
+print common_func()
