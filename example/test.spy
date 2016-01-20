@@ -1,6 +1,6 @@
 #import and use of usual python modules
-import sys
-print sys.version
+import os
+print os.name
 
 # import from shellpy module
 from example.common import common_func

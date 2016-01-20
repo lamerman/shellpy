@@ -3,6 +3,13 @@ import subprocess
 
 
 class Result:
+    """Result of a shell command execution.
+
+    To get the result as string use str(Result)
+    To get lines use the Result.lines field
+    You can also iterate over lines of result like this: for line in Result:
+    You can compaire two results that will mean compaire of result strings
+    """
     def __init__(self):
         self.lines = []
         self.returncode = -1
@@ -22,6 +29,11 @@ class Result:
 
 
 def exe(cmd):
+    """Executes command in shell and returns Result of execution
+
+    :param cmd: Command to execute
+    :return: Result of execution
+    """
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     result = Result()

@@ -6,6 +6,13 @@ from shellpython import preprocessor
 
 
 class PreprocessorImporter(object):
+    """
+    Every import of shellpy code requires first preprocessing of shellpy script into a usual python script
+    and then import of it. To make it we need a hook for every import.
+    When an import is required it first tries to import a module normally. In case an error arises it then tries
+    to locate a shellpy module with the same name and preprocess it. After preprocessing the module is added to
+    pythonpath and then imported
+    """
 
     def find_module(self, module_name, package_path):
         return self
