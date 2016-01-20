@@ -5,13 +5,6 @@ import tempfile
 import re
 import getpass
 
-# TODO: think about IDE. How to make generated modules visible
-# TODO: remove old files from modules
-# TODO: what if user specifies his own interpreter in the first line
-
-
-code_both_pattern = re.compile("`([^`]*)`")
-code_start_pattern = re.compile("`(.*)$")
 spy_file_pattern = re.compile("(.*)\.spy$")
 mod_time_pattern = re.compile('#mtime:(.*)')
 
@@ -79,6 +72,19 @@ def get_header(filepath, is_root_script):
 
 
 def preprocess_file(in_filepath, is_root_script):
+
+    code_both_pattern = re.compile("`([^`\r\n]*)`")
+    code_both_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
+
+    code_start_pattern = re.compile("`([^`\r\n]*)")
+    code_start_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
+
+    code_start_multiline_pattern = re.compile(r"`(([^\r\n]*\\\n){1,1000}[^\r\n]*)")
+    code_start_multiline_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
+
+    code_multiline_pattern = re.compile(r"($|\n)[^\r\n`]*`[\s\t]*\n(([^`]*)\n)*`")
+    code_multiline_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
+
     new_filepath = spy_file_pattern.sub(r"\1.py", in_filepath)
     out_filename = translate_to_temp_path(new_filepath)
 
@@ -90,20 +96,33 @@ def preprocess_file(in_filepath, is_root_script):
     if not os.path.exists(os.path.dirname(out_filename)):
         os.makedirs(os.path.dirname(out_filename), mode=0700)
 
-    processed_lines = list()
+    out_file_data = ''
 
     header_data = get_header(in_filepath, is_root_script)
-    processed_lines.append(header_data)
+    out_file_data += header_data
 
     with open(in_filepath, 'r') as f:
-        for line in f.readlines():
-            line = code_both_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())))", line)
-            line = code_start_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())))", line)
-            processed_lines.append(line)
-            # TODO: possibly we may remove globals and locals where vars are not used
+        in_file_data = f.read()
+
+        while True:
+            m = code_multiline_pattern.search(in_file_data)
+
+            if m is None:
+                break
+
+            fragment = in_file_data[m.start():m.end()]
+            fragment = re.sub(r'\n?(.*)`[\s\t]*\n', r'\1`', fragment)
+            fragment = re.sub(r'\n', '; ', fragment)
+
+            in_file_data = in_file_data[:m.start()] + '\n' + fragment + in_file_data[m.end():]
+
+        processed_data = code_start_multiline_pattern.sub(code_start_multiline_replacement, in_file_data)
+        processed_data = code_both_pattern.sub(code_both_replacement, processed_data)
+        processed_data = code_start_pattern.sub(code_start_replacement, processed_data)
+        out_file_data += processed_data
 
     with open(out_filename, 'w') as f:
-        f.writelines(processed_lines)
+        f.write(out_file_data)
 
     in_file_stat = os.stat(in_filepath)
     os.chmod(out_filename, in_file_stat.st_mode)

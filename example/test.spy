@@ -1,12 +1,43 @@
-from example.commoncode.my import common_func
+#import and use of usual python modules
+import sys
+print sys.version
 
-for line in `ls -l | grep shell`:
+# import from shellpy module
+from example.common import common_func
+
+# iteration over command output
+for line in `ls -l`:
+    # print of output with local variable capture
     print `echo LINE IS: {line}
 
+# return code capture
 s = `ls -l | grep non_existent_string
 if s.returncode == 0:
     print 'string found'
 else:
     print 'string not found'
 
-print common_func()
+# execution of function from imported module
+print 'Result of imported function is ' + str(common_func())
+
+# several commands on one line
+print 'It should be False: ' + str(`echo 1` == `echo 2`)
+print 'It should be True: ' + str(`echo 1` == `echo 1`)
+
+# multiline execution
+print `
+echo Line one of multiline
+echo Line two of multiline
+`
+
+# multiline execution with result capture
+f = `
+echo Line one of multiline with capture
+echo Line two of multiline with capture
+`
+print f
+
+# split one long command to several lines
+print `echo \
+    This is a long command \
+    on several lines
