@@ -28,7 +28,7 @@ Easily execute shell in your python code:
 s = `ls -l | grep non_existent_string
 ```
 
-Or multiline (now in development)
+Or multiline
 ```python
 `
 cp my.txt /tmp
