@@ -8,7 +8,7 @@ from shellpython.preprocessor import preprocess_file
 def main():
     filename = sys.argv[1]
     processed_file = preprocess_file(filename, is_root_script=True)
-    subprocess.call(processed_file, shell=True)
+    subprocess.call(processed_file + ' ' + ' '.join(sys.argv[2:]), shell=True)
 
 
 if __name__ == '__main__':
