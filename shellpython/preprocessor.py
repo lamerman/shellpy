@@ -5,7 +5,7 @@ import tempfile
 import re
 import getpass
 
-spy_file_pattern = re.compile("(.*)\.spy$")
+spy_file_pattern = re.compile(r'(.*)\.spy$')
 mod_time_pattern = re.compile('#mtime:(.*)')
 
 
@@ -66,15 +66,15 @@ def is_compilation_needed(in_filepath, out_filepath):
     in_mtime = os.path.getmtime(in_filepath)
 
     with open(out_filepath, 'r') as f:
-        firstline = f.readline().strip()
-        first_line_result = mod_time_pattern.search(firstline)
+        first_line = f.readline().strip()
+        first_line_result = mod_time_pattern.search(first_line)
         if first_line_result:
             mtime = first_line_result.group(1)
             if str(in_mtime) == mtime:
                 return False
         else:
-            secondline = f.readline().strip()
-            second_line_result = mod_time_pattern.search(secondline)
+            second_line = f.readline().strip()
+            second_line_result = mod_time_pattern.search(second_line)
             if second_line_result:
                 mtime = second_line_result.group(1)
                 if str(in_mtime) == mtime:
@@ -131,10 +131,15 @@ def preprocess_file(in_filepath, is_root_script):
     with open(in_filepath, 'r') as f:
         in_file_data = f.read()
 
-        processed_data = process_multilines(in_file_data)
+        processed_data = in_file_data
+
+        processed_data = process_multilines(processed_data)
         processed_data = process_long_lines(processed_data)
         processed_data = process_code_both(processed_data)
         processed_data = process_code_start(processed_data)
+
+        processed_data = escape(processed_data)
+        processed_data = intermediate_to_final(processed_data)
 
         out_file_data += processed_data
 
@@ -150,7 +155,7 @@ def preprocess_file(in_filepath, is_root_script):
     return out_filename
 
 
-def process_multilines(script_file_data):
+def process_multilines(script_data):
     """Converts a pyshell multiline expression to one line pyshell expression, each line of which is separated
     by semicolon. An example would be:
     f = `
@@ -159,22 +164,28 @@ def process_multilines(script_file_data):
     `
 
     :param script_data: the string of the whole script
-    :return: the shellpy script with multiline expressions converted to single line expressions
+    :return: the shellpy script with multiline expressions converted to intermediate form
     """
-    code_multiline_pattern = re.compile(r"($|\n)[^\r\n`]*`[\s\t]*\n(([^`]*)\n)*`")
+    code_multiline_pattern = re.compile(r'^([^`\n\r]*?)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
 
-    while True:
-        m = code_multiline_pattern.search(script_file_data)
+    script_data = code_multiline_pattern.sub(r'\1multiline_shexe(\2)shexe', script_data)
 
-        if m is None:
-            break
+    pattern = re.compile(r'multiline_shexe.*?shexe', re.DOTALL)
 
-        fragment = script_file_data[m.start():m.end()]
-        fragment = re.sub(r'\n?(.*)`[\s\t]*\n', r'\1`', fragment)
-        fragment = re.sub(r'\n', '; ', fragment)
+    strings = []
+    processed_string = []
+    for match in pattern.finditer(script_data):
+        original_str = script_data[match.start():match.end()]
+        processed_str = re.sub(r'([\r\n]{1,2})', r'; \\\1', original_str)
 
-        script_file_data = script_file_data[:m.start()] + '\n' + fragment + script_file_data[m.end():]
-    return script_file_data
+        strings.append(original_str)
+        processed_string.append(processed_str)
+
+    pairs = zip(strings, processed_string)
+    for s, ps in pairs:
+        script_data = script_data.replace(s, ps)
+
+    return script_data
 
 
 def process_long_lines(script_data):
@@ -184,11 +195,10 @@ def process_long_lines(script_data):
         lines
 
     :param script_data: the string of the whole script
-    :return: the shellpy script converted to python
+    :return: the shellpy script converted to intermediate form
     """
-    code_long_line_pattern = re.compile(r"`(([^\r\n]*\\\n){1,1000}[^\r\n]*)")
-    code_long_line_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
-    script_data = code_long_line_pattern.sub(code_long_line_replacement, script_data)
+    code_long_line_pattern = re.compile(r'`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
+    script_data = code_long_line_pattern.sub(r'longline_shexe(\1)shexe', script_data)
     return script_data
 
 
@@ -198,11 +208,10 @@ def process_code_both(script_data):
     f = `echo 1`
 
     :param script_data: the string of the whole script
-    :return: the shellpy script converted to python
+    :return: the shellpy script converted to intermediate form
     """
-    code_both_pattern = re.compile("`([^`\r\n]*)`")
-    code_both_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
-    script_data = code_both_pattern.sub(code_both_replacement, script_data)
+    code_both_pattern = re.compile(r'`(.*?)`')
+    script_data = code_both_pattern.sub(r'both_shexe(\1)shexe', script_data)
     return script_data
 
 
@@ -211,9 +220,45 @@ def process_code_start(script_data):
     f = `echo 1
 
     :param script_data: the string of the whole script
-    :return: the shellpy script converted to python
+    :return: the shellpy script converted to intermediate form
     """
-    code_start_pattern = re.compile("`([^`\r\n]*)")
-    code_start_replacement = r"exe('\1'.format(**dict(locals(), **globals())))"
-    script_data = code_start_pattern.sub(code_start_replacement, script_data)
+    code_start_pattern = re.compile(r'^([^\n\r`]*)`([^`\n\r]+)$', re.MULTILINE)
+    script_data = code_start_pattern.sub(r'\1start_shexe(\2)shexe', script_data)
     return script_data
+
+
+def escape(script_data):
+    """Escapes shell commands
+
+    :param script_data: the string of the whole script
+    :return: escaped script
+    """
+    pattern = re.compile(r'[a-z]*_shexe.*?shexe', re.DOTALL)
+
+    strings = []
+    processed_string = []
+
+    for match in pattern.finditer(script_data):
+        original_str = script_data[match.start():match.end()]
+        if original_str.find('\'') != -1:
+            processed_str = original_str.replace('\'', '\\\'')
+
+            strings.append(original_str)
+            processed_string.append(processed_str)
+
+    pairs = zip(strings, processed_string)
+    for s, ps in pairs:
+        script_data = script_data.replace(s, ps)
+
+    return script_data
+
+
+def intermediate_to_final(script_data):
+    """All shell blocks are first compiled to intermediate form. This part of code converts the intermediate
+    to final python code
+
+    :param script_data: the string of the whole script
+    :return: python script ready to be executed
+    """
+    intermediate_pattern = re.compile(r'[a-z]*_shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
+    return intermediate_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())))", script_data)

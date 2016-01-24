@@ -39,5 +39,6 @@ print f
 
 # split one long command to several lines
 print `echo \
-    This is a long command \
+    This is a \
+    long command \
     on several lines
