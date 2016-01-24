@@ -9,5 +9,6 @@ setup(name='Shell Python',
       author_email='alexander996@yandex.ru',
       url='https://github.com/lamerman/shellpython/',
       packages=['shellpython'],
-      scripts=['shellpy']
+      scripts=['shellpy'],
+      package_data={'shellpython': ['*.tpl']},
      )
