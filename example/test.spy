@@ -3,7 +3,7 @@ import os
 print os.name
 
 # import from shellpy module
-from example.common import common_func
+from common.common import common_func
 
 # iteration over command output
 for line in `ls -l`:

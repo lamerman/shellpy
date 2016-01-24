@@ -8,7 +8,12 @@ from shellpython.preprocessor import preprocess_file
 def main():
     filename = sys.argv[1]
     processed_file = preprocess_file(filename, is_root_script=True)
-    subprocess.call(processed_file + ' ' + ' '.join(sys.argv[2:]), shell=True)
+
+    #include directory of the script to pythonpath
+    new_env = os.environ.copy()
+    new_env['PYTHONPATH'] = new_env.get("PYTHONPATH", '') + os.pathsep + os.path.split(filename)[0]
+
+    subprocess.call(processed_file + ' ' + ' '.join(sys.argv[2:]), shell=True, env=new_env)
 
 
 if __name__ == '__main__':
