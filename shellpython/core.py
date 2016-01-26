@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 
 
@@ -39,6 +40,9 @@ def exe(cmd):
     result = Result()
 
     for line in p.stdout.readlines():
+        if sys.version_info[0] == 3:
+            line = line.decode(sys.stdout.encoding)
+
         result.add_line(line)
 
     p.wait()

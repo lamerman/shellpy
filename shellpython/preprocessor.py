@@ -123,7 +123,7 @@ def preprocess_file(in_filepath, is_root_script):
         return out_filename
 
     if not os.path.exists(os.path.dirname(out_filename)):
-        os.makedirs(os.path.dirname(out_filename), mode=0700)
+        os.makedirs(os.path.dirname(out_filename), mode=0o700)
 
     header_data = get_header(in_filepath, is_root_script)
     out_file_data = header_data
