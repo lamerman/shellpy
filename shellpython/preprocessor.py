@@ -4,9 +4,10 @@ import stat
 import tempfile
 import re
 import getpass
+import json
 
 spy_file_pattern = re.compile(r'(.*)\.spy$')
-mod_time_pattern = re.compile('#mtime:(.*)')
+shellpy_meta_pattern = re.compile(r'#shellpy-meta:(.*)')
 
 
 def get_username():
@@ -66,21 +67,14 @@ def is_compilation_needed(in_filepath, out_filepath):
     in_mtime = os.path.getmtime(in_filepath)
 
     with open(out_filepath, 'r') as f:
-        first_line = f.readline().strip()
-        first_line_result = mod_time_pattern.search(first_line)
-        if first_line_result:
-            mtime = first_line_result.group(1)
-            if str(in_mtime) == mtime:
-                return False
-        else:
-            second_line = f.readline().strip()
-            second_line_result = mod_time_pattern.search(second_line)
-            if second_line_result:
-                mtime = second_line_result.group(1)
-                if str(in_mtime) == mtime:
+        for i in range(0, 2):  # scan only for two first lines
+            line = f.readline().strip()
+            line_result = shellpy_meta_pattern.search(line)
+            if line_result:
+                meta = line_result.group(1)
+                meta = json.loads(meta)
+                if str(in_mtime) == meta['mtime']:
                     return False
-            else:
-                raise RuntimeError("Either first or second line of file should contain source timestamp")
 
     return True
 
@@ -101,7 +95,11 @@ def get_header(filepath, is_root_script):
     with open(header_filename, 'r') as f:
         header_data = f.read()
         mod_time = os.path.getmtime(filepath)
-        header_data = header_data.replace('{SOURCE_MODIFICATION_DATE}', 'mtime:{}'.format(mod_time))
+
+        meta = dict()
+        meta['mtime'] = str(mod_time)
+
+        header_data = header_data.replace('{meta}', json.dumps(meta))
         return header_data
 
 

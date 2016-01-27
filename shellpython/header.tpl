@@ -1,3 +1,3 @@
-#{SOURCE_MODIFICATION_DATE}
+#shellpy-meta:{meta}
 from shellpython.core import exe
 

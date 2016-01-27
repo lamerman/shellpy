@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#{SOURCE_MODIFICATION_DATE}
+#shellpy-meta:{meta}
 
 import sys
 from shellpython.core import exe
