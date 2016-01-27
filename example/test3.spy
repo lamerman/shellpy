@@ -17,12 +17,15 @@ if s.returncode == 0:
 else:
     print('string not found')
 
+if not s:
+    print('short form return code checking')
+
 # execution of function from imported module
-print ('Result of imported function is ' + str(common_func()))
+print('Result of imported function is ' + str(common_func()))
 
 # several commands on one line
-print ('It should be False: ' + str(`echo 1` == `echo 2`))
-print ('It should be True: ' + str(`echo 1` == `echo 1`))
+print('It should be False: ' + str(`echo 1` == `echo 2`))
+print('It should be True: ' + str(`echo 1` == `echo 1`))
 
 # multiline execution with result capture
 f = `

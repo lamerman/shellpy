@@ -17,6 +17,9 @@ if s.returncode == 0:
 else:
     print 'string not found'
 
+if not s:
+    print 'short form return code checking'
+
 # execution of function from imported module
 print 'Result of imported function is ' + str(common_func())
 

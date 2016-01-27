@@ -28,6 +28,11 @@ class Result:
     def __eq__(self, other):
         return self.__str__() == other.__str__()
 
+    def __bool__(self):
+        return self.returncode == 0
+
+    __nonzero__=__bool__
+
 
 def exe(cmd):
     """Executes command in shell and returns Result of execution
