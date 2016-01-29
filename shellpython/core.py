@@ -31,10 +31,10 @@ class Result:
     def __bool__(self):
         return self.returncode == 0
 
-    __nonzero__=__bool__
+    __nonzero__ = __bool__
 
 
-def exe(cmd):
+def exe(cmd, params):
     """Executes command in shell and returns Result of execution
 
     :param cmd: Command to execute
@@ -51,6 +51,9 @@ def exe(cmd):
         result.add_line(line)
 
     p.wait()
+
+    if params.find('p') != -1:
+        print(result)
 
     result.returncode = p.returncode
 

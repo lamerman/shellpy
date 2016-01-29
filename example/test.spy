@@ -45,3 +45,17 @@ print `echo \
     This is a \
     long command \
     on several lines
+
+# all commands with 'p' param which means print
+x = p`echo 1
+p`echo {x}`
+
+p`echo \
+    This is a \
+    long command \
+    on several lines
+
+p`
+echo Line one of multiline
+echo Line two of multiline
+`

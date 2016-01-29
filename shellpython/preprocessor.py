@@ -164,9 +164,9 @@ def process_multilines(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script with multiline expressions converted to intermediate form
     """
-    code_multiline_pattern = re.compile(r'^([^`\n\r]*?)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
+    code_multiline_pattern = re.compile(r'^([^`\n\r]*?)([a-z]*)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
 
-    script_data = code_multiline_pattern.sub(r'\1multiline_shexe(\2)shexe', script_data)
+    script_data = code_multiline_pattern.sub(r'\1multiline_shexe(\3)shexe(\2)shexe', script_data)
 
     pattern = re.compile(r'multiline_shexe.*?shexe', re.DOTALL)
 
@@ -195,8 +195,8 @@ def process_long_lines(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_long_line_pattern = re.compile(r'`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
-    script_data = code_long_line_pattern.sub(r'longline_shexe(\1)shexe', script_data)
+    code_long_line_pattern = re.compile(r'([a-z]*)`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
+    script_data = code_long_line_pattern.sub(r'longline_shexe(\2)shexe(\1)shexe', script_data)
     return script_data
 
 
@@ -208,8 +208,8 @@ def process_code_both(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_both_pattern = re.compile(r'`(.*?)`')
-    script_data = code_both_pattern.sub(r'both_shexe(\1)shexe', script_data)
+    code_both_pattern = re.compile(r'([a-z]*)`(.*?)`')
+    script_data = code_both_pattern.sub(r'both_shexe(\2)shexe(\1)shexe', script_data)
     return script_data
 
 
@@ -220,8 +220,8 @@ def process_code_start(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_start_pattern = re.compile(r'^([^\n\r`]*)`([^`\n\r]+)$', re.MULTILINE)
-    script_data = code_start_pattern.sub(r'\1start_shexe(\2)shexe', script_data)
+    code_start_pattern = re.compile(r'^([^\n\r`]*?)([a-z]*)`([^`\n\r]+)$', re.MULTILINE)
+    script_data = code_start_pattern.sub(r'\1start_shexe(\3)shexe(\2)shexe', script_data)
     return script_data
 
 
@@ -258,5 +258,5 @@ def intermediate_to_final(script_data):
     :param script_data: the string of the whole script
     :return: python script ready to be executed
     """
-    intermediate_pattern = re.compile(r'[a-z]*_shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
-    return intermediate_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())))", script_data)
+    intermediate_pattern = re.compile(r'[a-z]*_shexe\((.*?)\)shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
+    return intermediate_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())),'\2')", script_data)
