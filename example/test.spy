@@ -59,3 +59,9 @@ p`
 echo Line one of multiline
 echo Line two of multiline
 `
+
+# std error stream test
+
+e`ls -l /non_existent_directory
+x = `ls -l /non_existent_directory2
+print x.stderr_text()
