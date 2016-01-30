@@ -3,9 +3,20 @@ import sys
 import subprocess
 
 
+PARAM_PRINT_STDOUT = 'p'
+PARAM_PRINT_STDERR = 'e'
+PARAM_INTERACTIVE = 'i'
+
+
+def is_param_set(params, param):
+    return True if params.find(param) != -1 else False
+
+
 class Stream:
-    def __init__(self, file):
+    def __init__(self, file, encoding, print_out_stream = False):
         self._file = file
+        self._encoding = encoding
+        self._printOutStream = print_out_stream
 
     def __iter__(self):
         return self
@@ -13,15 +24,29 @@ class Stream:
     def next(self):
         return self.sreadline()
 
+    __next__ = next
+
     def sreadline(self):
         line = self._file.readline()
+        if sys.version_info[0] == 3:
+            line = line.decode(self._encoding)
+
         if line == '':
             raise StopIteration
         else:
-            return line.rstrip(os.linesep)
+            line = line.rstrip(os.linesep)
+            if self._printOutStream:
+                print(line)
+
+            return line
 
     def swriteline(self, text):
-        self._file.write(text + os.linesep)
+        text_with_linesep = text + os.linesep
+        if sys.version_info[0] == 3:
+            text_with_linesep = text_with_linesep.encode(self._encoding)
+
+        self._file.write(text_with_linesep)
+        self._file.flush()
 
 
 class InteractiveResult:
@@ -32,11 +57,16 @@ class InteractiveResult:
     You can also iterate over lines of result like this: for line in Result:
     You can compaire two results that will mean compaire of result strings
     """
-    def __init__(self, process):
+    def __init__(self, process, params):
         self._process = process
-        self.stdin = Stream(process.stdin)
-        self.stdout = Stream(process.stdout)
-        self.stderr = Stream(process.stderr)
+        self._params = params
+        self.stdin = Stream(process.stdin, sys.stdin.encoding)
+
+        print_stdout = is_param_set(params, PARAM_PRINT_STDOUT)
+        self.stdout = Stream(process.stdout, sys.stdout.encoding, print_stdout)
+
+        print_stderr = is_param_set(params, PARAM_PRINT_STDERR)
+        self.stderr = Stream(process.stderr, sys.stderr.encoding, print_stderr)
 
     def sreadline(self):
         return self.stdout.sreadline()
@@ -44,6 +74,7 @@ class InteractiveResult:
     def swriteline(self, text):
         self.stdin.swriteline(text)
 
+    @property
     def returncode(self):
         self._process.wait()
         return self._process.returncode
@@ -121,10 +152,10 @@ def create_result(cmd, params):
 
     p.wait()
 
-    if params.find('p') != -1:
+    if is_param_set(params, PARAM_PRINT_STDOUT):
         print(result.stdout_text())
 
-    if params.find('e') != -1:
+    if is_param_set(params, PARAM_PRINT_STDERR):
         print(result.stderr_text())
 
     result.returncode = p.returncode
@@ -135,13 +166,13 @@ def create_result(cmd, params):
 def create_interactive_result(cmd, params):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
-    result = InteractiveResult(p)
+    result = InteractiveResult(p, params)
 
     return result
 
 
 def exe(cmd, params):
-    if params.find('i') != -1:
+    if is_param_set(params, PARAM_INTERACTIVE):
         return create_interactive_result(cmd, params)
     else:
         return create_result(cmd, params)

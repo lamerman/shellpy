@@ -4,14 +4,14 @@ import os
 result = i`ping -c 3 8.8.8.8
 
 for line in result.stdout:
-    print line
+    print(line)
 
 result = ip`example/hello.py
 result.sreadline()
 result.swriteline('Alexander')
 result.sreadline()
 
-print result.returncode
+print(result.returncode)
 
 result = ie`ls -l /non_existent_directory
 result.stderr.sreadline()
