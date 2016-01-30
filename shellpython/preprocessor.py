@@ -68,7 +68,7 @@ def is_compilation_needed(in_filepath, out_filepath):
 
     with open(out_filepath, 'r') as f:
         for i in range(0, 2):  # scan only for two first lines
-            line = f.readline().strip()
+            line = f.readline()
             line_result = shellpy_meta_pattern.search(line)
             if line_result:
                 meta = line_result.group(1)

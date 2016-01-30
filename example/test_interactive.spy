@@ -1,0 +1,12 @@
+#import and use of usual python modules
+import os
+
+result = i`ping -c 3 8.8.8.8
+
+for line in result.stdout:
+    print line
+
+result = i`example/hello.py
+result.sreadline()
+result.swriteline('Alexander')
+print result.sreadline()
