@@ -2,6 +2,10 @@
 import os
 print (os.name)
 
+from shellpython import config as config
+config.PRINT_ALL_COMMANDS = True
+config.COLORAMA_ENABLED = True
+
 # import from shellpy module
 from common.common import common_func
 

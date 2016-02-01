@@ -1,0 +1,22 @@
+import shellpython.config as config
+
+def test_print_stdout_always():
+    `echo it should NOT be printed
+
+    config.PRINT_STDOUT_ALWAYS = True
+
+    `echo it should be printed
+
+    config.PRINT_STDOUT_ALWAYS = False
+
+def test_print_all_commands():
+    `echo the echo command should NOT be printed
+
+    config.PRINT_ALL_COMMANDS = True
+
+    `echo the echo command should be printed
+
+    config.PRINT_ALL_COMMANDS = False
+
+test_print_stdout_always()
+test_print_all_commands()

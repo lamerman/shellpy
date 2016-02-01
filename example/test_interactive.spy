@@ -1,6 +1,10 @@
 #import and use of usual python modules
 import os
 
+from shellpython import config as config
+config.PRINT_ALL_COMMANDS = True
+config.COLORAMA_ENABLED = True
+
 result = i`ping -c 3 8.8.8.8
 
 for line in result.stdout:

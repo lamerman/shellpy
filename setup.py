@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 setup(name='Shell Python',
       version='0.5',
@@ -11,4 +14,5 @@ setup(name='Shell Python',
       packages=['shellpython'],
       scripts=['shellpy'],
       package_data={'shellpython': ['*.tpl']},
+      install_requires=['colorama']
      )
