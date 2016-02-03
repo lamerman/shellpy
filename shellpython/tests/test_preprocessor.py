@@ -125,3 +125,10 @@ class TestEscape(unittest.TestCase):
         intermediate = 'x = start_shexe(echo \'1\')shexe()shexe'
         escaped = preprocessor.escape(intermediate)
         self.assertEquals(escaped, 'x = start_shexe(echo \\\'1\\\')shexe()shexe')
+
+
+class TestIntermediateToFinal(unittest.TestCase):
+    def test_common(self):
+        intermediate = 'x = int_shexe(expr)shexe(param)shexe'
+        final = preprocessor.intermediate_to_final(intermediate)
+        self.assertEquals(final, "x = exe('expr'.format(**dict(locals(), **globals())),'param')")
