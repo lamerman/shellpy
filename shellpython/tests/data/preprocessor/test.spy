@@ -1,0 +1,47 @@
+# simple
+
+`echo 1
+
+`echo 2`
+
+`echo Long \
+    line
+
+`
+echo line 1
+echo line 2
+`
+
+# with argument
+
+p`echo 1
+
+p`echo 2`
+
+p`echo Long \
+    line
+
+p`
+echo line 1
+echo line 2
+`
+
+# assignment
+
+p = `echo 1
+
+p = `echo 2`
+
+p = `echo Long \
+    line
+
+p = `
+echo line 1
+echo line 2
+`
+
+# complex
+
+`echo 1` == `echo 1
+
+`echo 1` == `echo 1`

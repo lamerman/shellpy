@@ -103,6 +103,15 @@ def get_header(filepath, is_root_script):
         return header_data
 
 
+def preprocess_code_to_intermediate(code):
+    processed_code = process_multilines(code)
+    processed_code = process_long_lines(processed_code)
+    processed_code = process_code_both(processed_code)
+    processed_code = process_code_start(processed_code)
+
+    return escape(processed_code)
+
+
 def preprocess_file(in_filepath, is_root_script):
     """Coverts a single shellpy file to python
 
@@ -127,19 +136,12 @@ def preprocess_file(in_filepath, is_root_script):
     out_file_data = header_data
 
     with open(in_filepath, 'r') as f:
-        in_file_data = f.read()
+        code = f.read()
 
-        processed_data = in_file_data
+        intermediate = preprocess_code_to_intermediate(code)
+        processed_code = intermediate_to_final(intermediate)
 
-        processed_data = process_multilines(processed_data)
-        processed_data = process_long_lines(processed_data)
-        processed_data = process_code_both(processed_data)
-        processed_data = process_code_start(processed_data)
-
-        processed_data = escape(processed_data)
-        processed_data = intermediate_to_final(processed_data)
-
-        out_file_data += processed_data
+        out_file_data += processed_code
 
     with open(out_filename, 'w') as f:
         f.write(out_file_data)

@@ -1,0 +1,44 @@
+# simple
+
+start_shexe(echo 1)shexe()shexe
+
+both_shexe(echo 2)shexe()shexe
+
+longline_shexe(echo Long \
+    line)shexe()shexe
+
+multiline_shexe(echo line 1; \
+echo line 2; \
+)shexe()shexe
+
+# with argument
+
+start_shexe(echo 1)shexe(p)shexe
+
+both_shexe(echo 2)shexe(p)shexe
+
+longline_shexe(echo Long \
+    line)shexe(p)shexe
+
+multiline_shexe(echo line 1; \
+echo line 2; \
+)shexe(p)shexe
+
+# assignment
+
+p = start_shexe(echo 1)shexe()shexe
+
+p = both_shexe(echo 2)shexe()shexe
+
+p = longline_shexe(echo Long \
+    line)shexe()shexe
+
+p = multiline_shexe(echo line 1; \
+echo line 2; \
+)shexe()shexe
+
+# complex
+
+both_shexe(echo 1)shexe()shexe == start_shexe(echo 1)shexe()shexe
+
+both_shexe(echo 1)shexe()shexe == both_shexe(echo 1)shexe()shexe
