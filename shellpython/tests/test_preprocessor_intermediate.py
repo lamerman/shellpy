@@ -21,9 +21,9 @@ class TestPreprocessorIntermediate(unittest.TestCase):
         imdt_matches = [[match[0]] for match in statement_regex.findall(imdt)]
         imdt_etalon_matches = [[match[0]] for match in statement_regex.findall(imdt_etalon)]
 
-        self.assertEquals(len(imdt_matches), len(imdt_etalon_matches))
+        self.assertEqual(len(imdt_matches), len(imdt_etalon_matches))
 
         zipped_matches = map(list.__add__, imdt_matches, imdt_etalon_matches)
         for matches in zipped_matches:
-            self.assertEquals(matches[0], matches[1])
+            self.assertEqual(matches[0], matches[1])
 
