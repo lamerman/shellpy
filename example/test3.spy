@@ -7,7 +7,7 @@ config.PRINT_ALL_COMMANDS = True
 config.COLORAMA_ENABLED = True
 
 # import from shellpy module
-from common.common import common_func
+from commoncode.common import common_func
 
 # iteration over command output
 for line in `ls -l`:
