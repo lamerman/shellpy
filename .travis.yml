@@ -14,4 +14,4 @@ install:
 # command to run tests
 script: python -m unittest discover
 if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then python ./shellpy example/test3.spy; fi
-if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then python ./shellpy example/test.spy; fi
+if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then python ./shellpy example/test.spy;  fi
