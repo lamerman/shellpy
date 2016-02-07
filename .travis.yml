@@ -1,19 +1,16 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
   - "3.2"
   - "3.3"
   - "3.4"
-  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
-  # maintainers to fix their pypy-dev package.
+  - "3.5"
   - "pypy"
-# command to install dependencies
+  - "pypy3"
 install:
   - pip install .
-# command to run tests
 script:
-  - /usr/bin/env python --version
   - python -m unittest discover
-  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then ./shellpy example/test3.spy; fi
+
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./shellpy example/test.spy;  fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then ./shellpy example/test3.spy; fi
