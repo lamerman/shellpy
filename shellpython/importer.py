@@ -20,6 +20,20 @@ class PreprocessorImporter(object):
     def load_module(self, module_name):
         sys.meta_path.remove(self)
 
+        print(sys.path)
+        print(module_name)
+        print(sys.modules)
+        print('pig')
+        cc = sys.modules['commoncode']
+        print(cc)
+        print(dir(cc))
+        print(cc.__doc__)
+        print(cc.__initializing__)
+        print(cc.__loader__)
+        print(cc.__name__)
+        print(cc.__package__)
+        print(cc.__path__)
+
         spy_module_path = locator.locate_spy_module(module_name)
         spy_file_path = locator.locate_spy_file(module_name)
 
