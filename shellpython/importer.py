@@ -15,35 +15,50 @@ class PreprocessorImporter(object):
     """
 
     def find_module(self, module_name, package_path):
-        return self
+        if module_name.find('.') == -1:
+            root_module_name = module_name
+        else:
+            root_module_name = module_name.split('.')[0]
+
+        spy_module_path = locator.locate_spy_module(root_module_name)
+        spy_file_path = locator.locate_spy_file(root_module_name)
+
+        if spy_module_path is not None or spy_file_path is not None:
+            return self
+        else:
+            return None
 
     def load_module(self, module_name):
         sys.meta_path.remove(self)
 
-        spy_module_path = locator.locate_spy_module(module_name)
-        spy_file_path = locator.locate_spy_file(module_name)
+        if module_name.find('.') == -1:
+            spy_module_path = locator.locate_spy_module(module_name)
+            spy_file_path = locator.locate_spy_file(module_name)
 
-        if spy_module_path is not None:
-            new_module_path = preprocessor.preprocess_module(spy_module_path)
-            new_module_pythonpath = os.path.split(new_module_path)[0]
+            if spy_module_path is not None:
+                new_module_path = preprocessor.preprocess_module(spy_module_path)
+                new_module_pythonpath = os.path.split(new_module_path)[0]
 
-            if new_module_pythonpath not in sys.path:
-                sys.path.append(new_module_pythonpath)
+                if new_module_pythonpath not in sys.path:
+                    sys.path.append(new_module_pythonpath)
 
-            module = import_module(module_name)
+                module = import_module(module_name)
 
-        elif spy_file_path is not None:
-            new_module_path = preprocessor.preprocess_file(spy_file_path, is_root_script=False)
-            new_module_pythonpath = os.path.split(new_module_path)[0]
+            elif spy_file_path is not None:
+                new_module_path = preprocessor.preprocess_file(spy_file_path, is_root_script=False)
+                new_module_pythonpath = os.path.split(new_module_path)[0]
 
-            if new_module_pythonpath not in sys.path:
-                sys.path.append(new_module_pythonpath)
+                if new_module_pythonpath not in sys.path:
+                    sys.path.append(new_module_pythonpath)
 
-            module = import_module(module_name)
+                module = import_module(module_name)
+
+            else:
+                raise ImportError("Unexpected error occured in importer. Neither shellpy module not file was found")
 
         else:
             module = import_module(module_name)
 
-        sys.meta_path.append(self)
+        sys.meta_path.insert(0, self)
 
         return module
