@@ -64,7 +64,7 @@ echo Line two of multiline
 
 e`ls -l /non_existent_directory
 x = `ls -l /non_existent_directory2
-print x.stderr_text()
+print x.stderr
 
 # escaped
 
