@@ -16,9 +16,9 @@ def is_colorama_enabled():
     return colorama_available and config.COLORAMA_ENABLED
 
 
-PARAM_PRINT_STDOUT = 'p'
-PARAM_PRINT_STDERR = 'e'
-PARAM_INTERACTIVE = 'i'
+PARAM_PRINT_STDOUT = 'p'  # print all stdout of executed command
+PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
+PARAM_INTERACTIVE = 'i'  # runs command in interactive mode when user can read output line by line and send to stdin
 
 
 def is_param_set(params, param):
@@ -109,35 +109,58 @@ class InteractiveResult:
 class Result:
     """Result of a shell command execution.
 
-    To get the result as string use str(Result)
-    To get lines use the Result.lines field
-    You can also iterate over lines of result like this: for line in Result:
-    You can compaire two results that will mean compaire of result strings
+    To get the result stdout as string use str(Result) or Result.stdout or print Result
+    To get output of stderr use Result.stderr()
+
+    You can also iterate over lines of stdout like this: for line in Result:
+
+    You can access underlying lines of result streams as Result.stdout_lines Result.stderr_lines.
+    E.g. line_two = Result.stdout_lines[2]
+
+    You can also compaire two results that will mean compaire of result stdouts
     """
     def __init__(self):
-        self.stdout_lines = []
-        self.stderr_lines = []
+        self._stdout_lines = []
+        self._stderr_lines = []
         self.returncode = None
 
-    def stdout_text(self):
-        return os.linesep.join(self.stdout_lines)
+    @property
+    def stdout(self):
+        """Stdout of Result as text
+        """
+        return os.linesep.join(self._stdout_lines)
 
-    def stderr_text(self):
-        return os.linesep.join(self.stderr_lines)
+    @property
+    def stderr(self):
+        """Stderr of Result as text
+        """
+        return os.linesep.join(self._stderr_lines)
+
+    @property
+    def stdout_lines(self):
+        """List of all lines from stdout
+        """
+        return self._stdout_lines
+
+    @property
+    def stderr_lines(self):
+        """List of all lines from stderr
+        """
+        return self._stderr_lines
 
     def _add_stdout_line(self, line):
         line = line.rstrip(os.linesep)
-        self.stdout_lines.append(line)
+        self._stdout_lines.append(line)
 
     def _add_stderr_line(self, line):
         line = line.rstrip(os.linesep)
-        self.stderr_lines.append(line)
+        self._stderr_lines.append(line)
 
     def __str__(self):
-        return self.stdout_text()
+        return self.stdout
 
     def __iter__(self):
-        return iter(self.stdout_lines)
+        return iter(self._stdout_lines)
 
     def __eq__(self, other):
         return self.__str__() == other.__str__()
@@ -168,13 +191,13 @@ def create_result(cmd, params):
     p.wait()
 
     if is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS:
-        print(result.stdout_text())
+        print(result.stdout)
 
     if is_param_set(params, PARAM_PRINT_STDERR):
         if is_colorama_enabled():
-            print(Fore.RED + result.stderr_text() + Style.RESET_ALL)
+            print(Fore.RED + result.stderr + Style.RESET_ALL)
         else:
-            print(result.stderr_text())
+            print(result.stderr)
 
     result.returncode = p.returncode
 

@@ -8,13 +8,27 @@ from shellpython import preprocessor
 class PreprocessorImporter(object):
     """
     Every import of shellpy code requires first preprocessing of shellpy script into a usual python script
-    and then import of it. To make it we need a hook for every import.
-    When an import is required it first tries to import a module normally. In case an error arises it then tries
-    to locate a shellpy module with the same name and preprocess it. After preprocessing the module is added to
-    pythonpath and then imported
+    and then import of it. To make it we need a hook for every import with standard python hooks.
+    See PEP-0302 https://www.python.org/dev/peps/pep-0302/ for more details
+
+    When an import occurs the find module function will be called first. It tries to find a shell python module or
+    file using the Locator class. If the search is successful and there is actually shellpy module or file with
+    the name specified, the find_module function will return self as Loader. If nothing is found, None will be
+    returned and the import mechanism of python will not be affected in any other way.
+    So if something was found then loader will preprocess file or module and import it with standard python
+    import
     """
 
     def find_module(self, module_name, package_path):
+        """This function is part of interface defined in import hooks PEP-0302
+        Given the name of the module its goal is to locate it. If shellpy module with the name was found,
+        self is returned as Loader for this module. Otherwise None is returned and standard python import
+        works as expected
+
+        :param module_name: the module to locate
+        :param package_path: part of interface, not used, see PEP-0302
+        :return: self if shellpy module was found, None if not
+        """
         if module_name.find('.') == -1:
             root_module_name = module_name
         else:
@@ -29,6 +43,14 @@ class PreprocessorImporter(object):
             return None
 
     def load_module(self, module_name):
+        """If the module was located it then is loaded by this function. It is also a part of PEP-0302 interface
+        Loading means first preprocessing of shell python code if it is not processed already and the addition
+        to system path and import.
+
+        :param module_name: the name of the module to load
+        :return: the module imported. This function assumes that it will import a module anyway since find_module
+        already found the module
+        """
         sys.meta_path.remove(self)
 
         if module_name.find('.') == -1:
