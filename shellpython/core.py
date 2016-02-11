@@ -21,6 +21,31 @@ PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
 PARAM_INTERACTIVE = 'i'  # runs command in interactive mode when user can read output line by line and send to stdin
 
 
+def exe(cmd, params):
+    """This function runs after preprocessing of code. It actually executes commands with subprocess
+
+    :param cmd: command to be executed with subprocess
+    :param params: parameters passed before ` character, i.e. p`echo 1 which means print result of execution
+    :return: result of execution. It may be either Result or InteractiveResult
+    """
+
+    global colorama_intialized
+    if _is_colorama_enabled() and not colorama_intialized:
+        colorama_intialized = True
+        colorama.init()
+
+    if config.PRINT_ALL_COMMANDS:
+        if _is_colorama_enabled():
+            print(Fore.GREEN + '>>> ' + cmd + Style.RESET_ALL)
+        else:
+            print('>>> ' + cmd)
+
+    if _is_param_set(params, PARAM_INTERACTIVE):
+        return _create_interactive_result(cmd, params)
+    else:
+        return _create_result(cmd, params)
+
+
 def _is_param_set(params, param):
     return True if params.find(param) != -1 else False
 
@@ -213,22 +238,3 @@ def _create_interactive_result(cmd, params):
     result = InteractiveResult(p, params)
 
     return result
-
-
-def exe(cmd, params):
-
-    global colorama_intialized
-    if _is_colorama_enabled() and not colorama_intialized:
-        colorama_intialized = True
-        colorama.init()
-
-    if config.PRINT_ALL_COMMANDS:
-        if _is_colorama_enabled():
-            print(Fore.GREEN + '>>> ' + cmd + Style.RESET_ALL)
-        else:
-            print('>>> ' + cmd)
-
-    if _is_param_set(params, PARAM_INTERACTIVE):
-        return _create_interactive_result(cmd, params)
-    else:
-        return _create_result(cmd, params)
