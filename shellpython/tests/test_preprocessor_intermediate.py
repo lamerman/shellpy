@@ -11,7 +11,7 @@ class TestPreprocessorIntermediate(unittest.TestCase):
 
     def test_process_and_compare_file(self):
         with open(os.path.join(self.test_dir, 'test.spy')) as code_f:
-            imdt = preprocessor.preprocess_code_to_intermediate(code_f.read())
+            imdt = preprocessor._preprocess_code_to_intermediate(code_f.read())
 
         with open(os.path.join(self.test_dir, 'test.imdt')) as imdt_etalon_f:
             imdt_etalon = imdt_etalon_f.read()

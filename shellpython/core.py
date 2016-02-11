@@ -12,7 +12,7 @@ except ImportError:
     colorama_available = False
 
 
-def is_colorama_enabled():
+def _is_colorama_enabled():
     return colorama_available and config.COLORAMA_ENABLED
 
 
@@ -21,7 +21,7 @@ PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
 PARAM_INTERACTIVE = 'i'  # runs command in interactive mode when user can read output line by line and send to stdin
 
 
-def is_param_set(params, param):
+def _is_param_set(params, param):
     return True if params.find(param) != -1 else False
 
 
@@ -79,11 +79,11 @@ class InteractiveResult:
         self._params = params
         self.stdin = Stream(process.stdin, sys.stdin.encoding)
 
-        print_stdout = is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS
+        print_stdout = _is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS
         self.stdout = Stream(process.stdout, sys.stdout.encoding, print_stdout)
 
-        print_stderr = is_param_set(params, PARAM_PRINT_STDERR)
-        color = None if not is_colorama_enabled() else Fore.RED
+        print_stderr = _is_param_set(params, PARAM_PRINT_STDERR)
+        color = None if not _is_colorama_enabled() else Fore.RED
         self.stderr = Stream(process.stderr, sys.stderr.encoding, print_stderr, color)
 
     def sreadline(self):
@@ -171,7 +171,7 @@ class Result:
     __nonzero__ = __bool__
 
 
-def create_result(cmd, params):
+def _create_result(cmd, params):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     result = Result()
@@ -190,11 +190,11 @@ def create_result(cmd, params):
 
     p.wait()
 
-    if is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS:
+    if _is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS:
         print(result.stdout)
 
-    if is_param_set(params, PARAM_PRINT_STDERR):
-        if is_colorama_enabled():
+    if _is_param_set(params, PARAM_PRINT_STDERR):
+        if _is_colorama_enabled():
             print(Fore.RED + result.stderr + Style.RESET_ALL)
         else:
             print(result.stderr)
@@ -207,7 +207,7 @@ def create_result(cmd, params):
     return result
 
 
-def create_interactive_result(cmd, params):
+def _create_interactive_result(cmd, params):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
     result = InteractiveResult(p, params)
@@ -218,17 +218,17 @@ def create_interactive_result(cmd, params):
 def exe(cmd, params):
 
     global colorama_intialized
-    if is_colorama_enabled() and not colorama_intialized:
+    if _is_colorama_enabled() and not colorama_intialized:
         colorama_intialized = True
         colorama.init()
 
     if config.PRINT_ALL_COMMANDS:
-        if is_colorama_enabled():
+        if _is_colorama_enabled():
             print(Fore.GREEN + '>>> ' + cmd + Style.RESET_ALL)
         else:
             print('>>> ' + cmd)
 
-    if is_param_set(params, PARAM_INTERACTIVE):
-        return create_interactive_result(cmd, params)
+    if _is_param_set(params, PARAM_INTERACTIVE):
+        return _create_interactive_result(cmd, params)
     else:
-        return create_result(cmd, params)
+        return _create_result(cmd, params)

@@ -10,17 +10,6 @@ spy_file_pattern = re.compile(r'(.*)\.spy$')
 shellpy_meta_pattern = re.compile(r'#shellpy-meta:(.*)')
 
 
-def get_username():
-    """Returns the name of current user. The function is used in construction of the path for processed shellpy files on
-    temp file system
-
-    :return: The name of current user
-    """
-    return getpass.getuser()
-    # TODO: what if function does not work
-    # TODO: see whether getpass is available everywhere
-
-
 def preprocess_module(module_path):
     """The function compiles a module in shellpy to a python module, walking through all the shellpy files inside of
     the module and compiling all of them to python
@@ -35,10 +24,64 @@ def preprocess_module(module_path):
                 filepath = os.path.join(path, file)
                 preprocess_file(filepath, is_root_script=False)
 
-    return translate_to_temp_path(module_path)
+    return _translate_to_temp_path(module_path)
 
 
-def translate_to_temp_path(path):
+def preprocess_file(in_filepath, is_root_script):
+    """Coverts a single shellpy file to python
+
+    :param in_filepath: The path of shellpy file to be processed
+    :param is_root_script: Shows whether the file being processed is a root file, which means the one
+            that user executed
+    :return: The path of python file that was created of shellpy script
+    """
+
+    new_filepath = spy_file_pattern.sub(r"\1.py", in_filepath)
+    out_filename = _translate_to_temp_path(new_filepath)
+
+    if not is_root_script and not _is_compilation_needed(in_filepath, out_filename):
+        # TODO: cache root also
+        # TODO: if you don't compile but it's root, you need to change to exec
+        return out_filename
+
+    if not os.path.exists(os.path.dirname(out_filename)):
+        os.makedirs(os.path.dirname(out_filename), mode=0o700)
+
+    header_data = _get_header(in_filepath, is_root_script)
+    out_file_data = header_data
+
+    with open(in_filepath, 'r') as f:
+        code = f.read()
+
+        intermediate = _preprocess_code_to_intermediate(code)
+        processed_code = _intermediate_to_final(intermediate)
+
+        out_file_data += processed_code
+
+    with open(out_filename, 'w') as f:
+        f.write(out_file_data)
+
+    in_file_stat = os.stat(in_filepath)
+    os.chmod(out_filename, in_file_stat.st_mode)
+
+    if is_root_script:
+        os.chmod(out_filename, in_file_stat.st_mode | stat.S_IEXEC)
+
+    return out_filename
+
+
+def _get_username():
+    """Returns the name of current user. The function is used in construction of the path for processed shellpy files on
+    temp file system
+
+    :return: The name of current user
+    """
+    return getpass.getuser()
+    # TODO: what if function does not work
+    # TODO: see whether getpass is available everywhere
+
+
+def _translate_to_temp_path(path):
     """Compiled shellpy files are stored on temp filesystem on path like this /{tmp}/{user}/{real_path_of_file_on_fs}
     Every user will have its own copy of compiled shellpy files. Since we store them somewhere else relative to
     the place where they actually are, we need a translation function that would allow us to easily get path
@@ -50,11 +93,11 @@ def translate_to_temp_path(path):
     absolute_path = os.path.abspath(path)
     relative_path = os.path.relpath(absolute_path, os.path.abspath(os.sep))
     # TODO: this will not work in win where root is C:\ and absolute_in_path is on D:\
-    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', get_username(), relative_path)
+    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), relative_path)
     return translated_path
 
 
-def is_compilation_needed(in_filepath, out_filepath):
+def _is_compilation_needed(in_filepath, out_filepath):
     """Shows whether compilation of input file is required. It may be not required if the output file did not change
 
     :param in_filepath: The path of shellpy file to be processed
@@ -79,7 +122,7 @@ def is_compilation_needed(in_filepath, out_filepath):
     return True
 
 
-def get_header(filepath, is_root_script):
+def _get_header(filepath, is_root_script):
     """To execute converted shellpy file we need to add a header to it. The header contains needed imports and
     required code
 
@@ -103,7 +146,7 @@ def get_header(filepath, is_root_script):
         return header_data
 
 
-def preprocess_code_to_intermediate(code):
+def _preprocess_code_to_intermediate(code):
     """Before compiling to actual python code all expressions are converted to universal intermediate form
     It is very convenient as it is possible to perform common operations for all expressions
     The intemediate form looks like this:
@@ -112,58 +155,15 @@ def preprocess_code_to_intermediate(code):
     :param code: code to convert to intermediate form
     :return: converted code
     """
-    processed_code = process_multilines(code)
-    processed_code = process_long_lines(processed_code)
-    processed_code = process_code_both(processed_code)
-    processed_code = process_code_start(processed_code)
+    processed_code = _process_multilines(code)
+    processed_code = _process_long_lines(processed_code)
+    processed_code = _process_code_both(processed_code)
+    processed_code = _process_code_start(processed_code)
 
-    return escape(processed_code)
-
-
-def preprocess_file(in_filepath, is_root_script):
-    """Coverts a single shellpy file to python
-
-    :param in_filepath: The path of shellpy file to be processed
-    :param is_root_script: Shows whether the file being processed is a root file, which means the one
-            that user executed
-    :return: The path of python file that was created of shellpy script
-    """
-
-    new_filepath = spy_file_pattern.sub(r"\1.py", in_filepath)
-    out_filename = translate_to_temp_path(new_filepath)
-
-    if not is_root_script and not is_compilation_needed(in_filepath, out_filename):
-        # TODO: cache root also
-        # TODO: if you don't compile but it's root, you need to change to exec
-        return out_filename
-
-    if not os.path.exists(os.path.dirname(out_filename)):
-        os.makedirs(os.path.dirname(out_filename), mode=0o700)
-
-    header_data = get_header(in_filepath, is_root_script)
-    out_file_data = header_data
-
-    with open(in_filepath, 'r') as f:
-        code = f.read()
-
-        intermediate = preprocess_code_to_intermediate(code)
-        processed_code = intermediate_to_final(intermediate)
-
-        out_file_data += processed_code
-
-    with open(out_filename, 'w') as f:
-        f.write(out_file_data)
-
-    in_file_stat = os.stat(in_filepath)
-    os.chmod(out_filename, in_file_stat.st_mode)
-
-    if is_root_script:
-        os.chmod(out_filename, in_file_stat.st_mode | stat.S_IEXEC)
-
-    return out_filename
+    return _escape(processed_code)
 
 
-def process_multilines(script_data):
+def _process_multilines(script_data):
     """Converts a pyshell multiline expression to one line pyshell expression, each line of which is separated
     by semicolon. An example would be:
     f = `
@@ -196,7 +196,7 @@ def process_multilines(script_data):
     return script_data
 
 
-def process_long_lines(script_data):
+def _process_long_lines(script_data):
     """Converts to python a pyshell expression that takes more than one line. An example would be:
     f = `echo The string \
         on several \
@@ -210,7 +210,7 @@ def process_long_lines(script_data):
     return script_data
 
 
-def process_code_both(script_data):
+def _process_code_both(script_data):
     """Converts to python a pyshell script that has ` symbol both in the beginning of expression and in the end.
     An example would be:
     f = `echo 1`
@@ -223,7 +223,7 @@ def process_code_both(script_data):
     return script_data
 
 
-def process_code_start(script_data):
+def _process_code_start(script_data):
     """Converts to python a pyshell script that has ` symbol only in the beginning. An example would be:
     f = `echo 1
 
@@ -235,7 +235,7 @@ def process_code_start(script_data):
     return script_data
 
 
-def escape(script_data):
+def _escape(script_data):
     """Escapes shell commands
 
     :param script_data: the string of the whole script
@@ -261,7 +261,7 @@ def escape(script_data):
     return script_data
 
 
-def intermediate_to_final(script_data):
+def _intermediate_to_final(script_data):
     """All shell blocks are first compiled to intermediate form. This part of code converts the intermediate
     to final python code
 
