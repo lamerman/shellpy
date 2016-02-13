@@ -1,24 +1,25 @@
 import os
 import sys
 import subprocess
+from os import environ as env
 from shellpython import config
 
-colorama_intialized = False
-colorama_available = True
+_colorama_intialized = False
+_colorama_available = True
 try:
     import colorama
     from colorama import Fore, Style
 except ImportError:
-    colorama_available = False
+    _colorama_available = False
 
 
 def _is_colorama_enabled():
-    return colorama_available and config.COLORAMA_ENABLED
+    return _colorama_available and config.COLORAMA_ENABLED
 
 
-PARAM_PRINT_STDOUT = 'p'  # print all stdout of executed command
-PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
-PARAM_INTERACTIVE = 'i'  # runs command in interactive mode when user can read output line by line and send to stdin
+_PARAM_PRINT_STDOUT = 'p'  # print all stdout of executed command
+_PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
+_PARAM_INTERACTIVE = 'i'  # runs command in interactive mode when user can read output line by line and send to stdin
 
 
 def exe(cmd, params):
@@ -29,9 +30,9 @@ def exe(cmd, params):
     :return: result of execution. It may be either Result or InteractiveResult
     """
 
-    global colorama_intialized
-    if _is_colorama_enabled() and not colorama_intialized:
-        colorama_intialized = True
+    global _colorama_intialized
+    if _is_colorama_enabled() and not _colorama_intialized:
+        _colorama_intialized = True
         colorama.init()
 
     if config.PRINT_ALL_COMMANDS:
@@ -40,7 +41,7 @@ def exe(cmd, params):
         else:
             print('>>> ' + cmd)
 
-    if _is_param_set(params, PARAM_INTERACTIVE):
+    if _is_param_set(params, _PARAM_INTERACTIVE):
         return _create_interactive_result(cmd, params)
     else:
         return _create_result(cmd, params)
@@ -104,10 +105,10 @@ class InteractiveResult:
         self._params = params
         self.stdin = Stream(process.stdin, sys.stdin.encoding)
 
-        print_stdout = _is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS
+        print_stdout = _is_param_set(params, _PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS
         self.stdout = Stream(process.stdout, sys.stdout.encoding, print_stdout)
 
-        print_stderr = _is_param_set(params, PARAM_PRINT_STDERR)
+        print_stderr = _is_param_set(params, _PARAM_PRINT_STDERR)
         color = None if not _is_colorama_enabled() else Fore.RED
         self.stderr = Stream(process.stderr, sys.stderr.encoding, print_stderr, color)
 
@@ -197,7 +198,11 @@ class Result:
 
 
 def _create_result(cmd, params):
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd,
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         env=os.environ)
 
     result = Result()
 
@@ -215,10 +220,10 @@ def _create_result(cmd, params):
 
     p.wait()
 
-    if _is_param_set(params, PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS:
+    if _is_param_set(params, _PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS:
         print(result.stdout)
 
-    if _is_param_set(params, PARAM_PRINT_STDERR):
+    if _is_param_set(params, _PARAM_PRINT_STDERR):
         if _is_colorama_enabled():
             print(Fore.RED + result.stderr + Style.RESET_ALL)
         else:

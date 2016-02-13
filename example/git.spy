@@ -1,0 +1,30 @@
+"""
+This script clones shellpython to temporary directory and finds the commit hash where README was created
+"""
+
+import tempfile
+import os.path
+from shellpython.helpers import Dir
+
+# We will make everything in temp directory. Dir helper allows you to change current directory
+# withing 'with' block
+with Dir(tempfile.gettempdir()):
+    if not os.path.exists('shellpy'):
+        # just executes shell command
+        `git clone https://github.com/lamerman/shellpy.git
+
+    # switch to newly created tempdirectory/shellpy
+    with Dir('shellpy'):
+        # here we capture result of shell execution. log here is an instance of Result class
+        log = `git log --pretty=oneline --grep='Create'
+
+        # shellpy allows you to iterate over lines in stdout with this syntactic sugar
+        for line in log:
+            if line.find('README.md'):
+                hashcode = log.stdout.split(' ')[0]
+                print hashcode
+                exit(0)
+
+        print 'The commit where the readme was created was not found'
+
+exit(1)
