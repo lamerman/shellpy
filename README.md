@@ -1,6 +1,7 @@
 # shellpy
 A tool for convenient shell scripting in Python
 
+[![Build Status](https://travis-ci.org/lamerman/shellpy.svg?branch=master)](https://travis-ci.org/lamerman/shellpy)
 [![Join the chat at https://gitter.im/lamerman/shellpy](https://badges.gitter.im/lamerman/shellpy.svg)](https://gitter.im/lamerman/shellpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This tool allows you to write all your shell scripts in Python in a convenient way and forget about Bash/Sh. It lets you write scripts like this:
