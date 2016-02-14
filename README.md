@@ -4,64 +4,81 @@ A tool for convenient shell scripting in Python
 [![Build Status](https://travis-ci.org/lamerman/shellpy.svg?branch=master)](https://travis-ci.org/lamerman/shellpy)
 [![Join the chat at https://gitter.im/lamerman/shellpy](https://badges.gitter.im/lamerman/shellpy.svg)](https://gitter.im/lamerman/shellpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-This tool allows you to write all your shell scripts in Python in a convenient way and forget about Bash/Sh. It lets you write scripts like this:
+This tool allows you to write all your shell scripts in Python in a convenient way and in many cases replace Bash/Sh. It lets you write scripts like this:
 ```python
-import os
-from common.code import common_func
 
-for line in `ls -l | grep shell`:
-    print `echo LINE IS: {line}
+"""
+This script clones shellpython to temporary directory and finds the commit hash where README was created
+"""
 
-s = `ls -l | grep non_existent_string
-if s.returncode == 0:
-    print 'string found'
-else:
-    print 'string not found'
+import tempfile
+import os.path
+from shellpython.helpers import Dir
 
-print common_func()
+# We will make everything in temp directory. Dir helper allows you to change current directory
+# withing 'with' block
+with Dir(tempfile.gettempdir()):
+    if not os.path.exists('shellpy'):
+        # just executes shell command
+        `git clone https://github.com/lamerman/shellpy.git
+
+    # switch to newly created tempdirectory/shellpy
+    with Dir('shellpy'):
+        # here we capture result of shell execution. log here is an instance of Result class
+        log = `git log --pretty=oneline --grep='Create'
+
+        # shellpy allows you to iterate over lines in stdout with this syntactic sugar
+        for line in log:
+            if line.find('README.md'):
+                hashcode = log.stdout.split(' ')[0]
+                print hashcode
+                exit(0)
+
+        print 'The commit where the readme was created was not found'
+
+exit(1)
 ```
 
-Use available python and libraries as usual:
+As you can see, all expressions inside of grave accent ( ` ) symbol are executed in shell. And in python code you can capture result of this execution and perform action on it. 
+For example:
 ```python
-import os
+log = `git log --pretty=oneline --grep='Create'
 ```
+This line will first execute ```git log --pretty=oneline --grep='Create'``` in shell and then assign the result to the ```log``` variable.
+The result has the following properties:
+- **stdout** the whole text from stdout of the executed process
+- **stderr** the whole text from stderr of the executed process
+- **returncode** returncode of the execution
 
-Easily execute shell in your python code:
-```python
-s = `ls -l | grep non_existent_string
+Besides properties the result has some syntactic sugar:
+- ```str(log)``` returns string of stdout
+- ```if log:``` is equivalent to ```if log.returncode == 0``` that allows you to easily branch your code based on result of execution
+- ```for line in log``` allows you to iterate over all lines of stdout
+- ```log == '8fcedfs Create Readme'``` makes it easier to compaire output (stdout) of the process with some predefined text or the output of other command
+
+### Ways to execute shell
+
+As mentioned above all codeblocks inside of the grave accent ( ` ) symbol will be executed in shell. 
+
+```result = `echo 1` ```
+
+For simplicity it is also possible to leave the symbol only in the beginning of expression. Then the other rest of line will be considered as shell expression:
+
+```result = `echo 1 ```
+
+It is also possible to execute multiline expressions:
+
 ```
-
-Or multiline
-```python
+result = `
+mkdir /tmp/music
+cp *.mp3 > /tmp/music
 `
-cp my.txt /tmp
-ls -l /tmp
-`
 ```
 
-Iterate over ouput lines:
-```python
-for line in `ls -l | grep shell`:
-```
+And long line expressions:
 
-Print output of shell commands:
-```python
-print `echo LINE IS: {line}
 ```
-
-Capture return code:
-```python
-s = `ls -l | grep non_existent_string
-if s.returncode == 0:
-  ...
-```
-
-Reuse code written in shellpy in the very same way you reuse usual python code. You are free to create modules and files and import them as you normally import in Python
-```python
-from common.code import common_func
-```
-where ```common``` is a module in shellpy and code is ```code.spy``` file in that module with this content:
-```python
-def common_func():
-    return `echo 5
+result = `echo This is \
+a very long line, \
+very very long...
 ```
