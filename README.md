@@ -82,3 +82,15 @@ result = `echo This is \
 a very long line, \
 very very long...
 ```
+
+### How it all works
+
+You could mention that the syntax in files is not a correct python syntax and to run it you need to start it with the ```shellpy``` script. Every script has ```.spy``` extension and being executed by ```shellpy``` it is first preprocessed to python and then the resulting python files are added to ```sys.path``` and imported. To import shellpy files the standard import hook is used described in [PEP 0302 -- New Import Hooks](https://www.python.org/dev/peps/pep-0302/)
+
+### Integration with python
+
+The script was designed to be easily integrated with python. Inside .spy script you can import all python libraries as in usual python and use them. There is not differences in syntax except for the one that the grave accent ( \` ) symbol is used not as ```eval``` but as shell execution, everything else is absolutelly the same.
+
+Besides importing python modules, you can reuse and import shellpy modules/files in the very same way you do it for python. You only need to name your files with shellpython as *.spy and if you want to create a module, instead of putting ```__init__.py``` to directory, just put ```__init___.spy```
+
+More information can be found in examples and documentation
