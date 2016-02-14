@@ -94,3 +94,22 @@ The script was designed to be easily integrated with python. Inside .spy script 
 Besides importing python modules, you can reuse and import shellpy modules/files in the very same way you do it for python. You only need to name your files with shellpython as *.spy and if you want to create a module, instead of putting ```__init__.py``` to directory, just put ```__init___.spy```
 
 More information can be found in examples and documentation
+
+### Installation
+
+You can install it either with ```pip install shellpy``` or by cloning this repository and execution of ```setup.py install```. After that you will have ```shellpy``` command installed.
+
+### Running
+
+You can try shellpython by running examples after installation. Download this repository and run the following command in the root folder of the cloned repository:
+```shellpy example/curl.spy```
+```shellpy example/git.spy```
+
+There is also so called allinone example which you can have a look at and execute like this:
+```shellpy example/allinone/test.spy```
+It is called all in one because it demonstrates all features available in shellpy. If you have python3 run instead:
+```shellpy example/allinone/test3.spy```
+
+### Is it reliable
+
+Shellpython is covered with test and is tested with all major versions of python in Travis CI
