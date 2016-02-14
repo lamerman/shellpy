@@ -102,12 +102,17 @@ You can install it either with ```pip install shellpy``` or by cloning this repo
 ### Running
 
 You can try shellpython by running examples after installation. Download this repository and run the following command in the root folder of the cloned repository:
+
 ```shellpy example/curl.spy```
+
 ```shellpy example/git.spy```
 
 There is also so called allinone example which you can have a look at and execute like this:
+
 ```shellpy example/allinone/test.spy```
+
 It is called all in one because it demonstrates all features available in shellpy. If you have python3 run instead:
+
 ```shellpy example/allinone/test3.spy```
 
 ### Is it reliable
