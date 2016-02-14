@@ -21,8 +21,8 @@ if answer:
         # if there were no problems show the file
         p`ls -l {destination}
     else:
-        print 'Failed to download avatar'
+        print('Failed to download avatar')
 
-    print 'Avatar downloaded'
+    print('Avatar downloaded')
 else:
-    print 'Failed to access github api'
+    print('Failed to access github api')
