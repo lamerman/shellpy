@@ -118,3 +118,7 @@ It is called all in one because it demonstrates all features available in shellp
 ### Is it reliable
 
 Shellpython is covered with test and is tested with all major versions of python in Travis CI
+
+### Documentation
+
+[Wiki](https://github.com/lamerman/shellpy/wiki/A-guide-to-shell-python)
