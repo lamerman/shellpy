@@ -121,4 +121,4 @@ Shellpython is covered with test and is tested with all major versions of python
 
 ### Documentation
 
-[Wiki](https://github.com/lamerman/shellpy/wiki/A-guide-to-shell-python)
+[Wiki](https://github.com/lamerman/shellpy/wiki)
