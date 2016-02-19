@@ -1,15 +1,106 @@
 # shellpy
-A tool for convenient shell scripting in Python
+A tool for convenient shell scripting in Python. It allows you to write all your shell scripts in Python in a convenient way and in many cases replace Bash/Sh. 
 
 [![Build Status](https://travis-ci.org/lamerman/shellpy.svg?branch=master)](https://travis-ci.org/lamerman/shellpy)
 [![Join the chat at https://gitter.im/lamerman/shellpy](https://badges.gitter.im/lamerman/shellpy.svg)](https://gitter.im/lamerman/shellpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-This tool allows you to write all your shell scripts in Python in a convenient way and in many cases replace Bash/Sh. It lets you write scripts like this:
-```python
+## Preface - Why do we need shell python?
 
-"""
+For many people bash/sh seem to be pretty complicated. An example would be regular expressions, working with json/yaml/xml, named arguments parsing and so on. There are many things that are much easier in python to understand and work with.
+
+## Introduction
+
+Shell python has no differences from python except for one. Grave accent symbol (`) does not mean eval, it means execution of shell commands. So
+
+    `ls -l`
+
+will execute `ls -l` in shell. You can also skip one ` in the end of line
+
+    `ls -l
+
+and it will also be a correct syntax. It is also possible to write multiline expressions
+
+    `
+    echo test > test.txt
+    cat test.txt
+    `
+
+and long lines
+
+    `echo This is \
+      a very long \
+      line
+
+Every shellpy exression returns a Result
+
+    result = `ls -l
+
+It can be either Result or InteractiveResult. Let's start with a simple Result. First you can check returncode of a command
+
+    result = `ls -l
+    print result.returncode
+
+You can also get text from stdout or stderr
+
+    result = `ls -l
+    result_text = result.stdout
+    result_error = result.stderr
+
+You can iterate over lines of result stdout
+
+    result = `ls -l
+    for line in result:
+        print line.upper()
+
+and so on. 
+
+It also has syntactic sugar for some operations like checking result for zero
+
+    result = `ls -l
+    if result:
+        print 'Return code for ls -l was 0'
+
+Or getting stdout
+
+    result = `ls -l
+    print result
+
+## Integration with python and code reuse
+
+As it was said before shellpython does not differ a lot from ordinary python. You can import python modules and use them as usual
+
+    import os.path
+    
+    `mkdir /tmp/mydir
+    os.path.exists('/tmp/mydir') # True
+
+And you can do the same with shellpython modules. Suppose you have shellpy module `common` as in examples directory. So this is how it looks
+
+    ls common/
+    common.spy  __init__.spy
+
+So you have directory `common` and two files inside: `__init__.spy` and `common.spy`. Looks like a python module right? Exactly. The only difference is file extension. For `__init__.spy` and other files it must be `.spy`. Let's look inside `common.spy`
+
+    def common_func():
+        return `echo 5
+
+A simple function that returns Result of `echo 5` execution. How is it used how in code? As same as in python
+
+    from common.common import common_func
+    
+    print('Result of imported function is ' + str(common_func()))
+
+Note that the `common` directory must be in pythonpath to be imported.
+
+### How does import work?
+
+It uses import hooks described in [PEP 0302 -- New Import Hooks](https://www.python.org/dev/peps/pep-0302/). So, whenever importer finds a shellpy module or a file with .spy extension and with the name that you import, it will try to first preprocess it from shellpy to python and then import it using standard python import. Once preprocessed, the file is cached in your system temp directory and the second time it will be just imported directly.
+
+### Example
+
 This script clones shellpython to temporary directory and finds the commit hash where README was created
-"""
+
+```python
 
 import tempfile
 import os.path
@@ -39,61 +130,7 @@ with Dir(tempfile.gettempdir()):
 exit(1)
 ```
 
-As you can see, all expressions inside of grave accent ( ` ) symbol are executed in shell. And in python code you can capture result of this execution and perform action on it. 
-For example:
-```python
-log = `git log --pretty=oneline --grep='Create'
-```
-This line will first execute ```git log --pretty=oneline --grep='Create'``` in shell and then assign the result to the ```log``` variable.
-The result has the following properties:
-- **stdout** the whole text from stdout of the executed process
-- **stderr** the whole text from stderr of the executed process
-- **returncode** returncode of the execution
-
-Besides properties the result has some syntactic sugar:
-- ```str(log)``` returns string of stdout
-- ```if log:``` is equivalent to ```if log.returncode == 0``` that allows you to easily branch your code based on result of execution
-- ```for line in log``` allows you to iterate over all lines of stdout
-- ```log == '8fcedfs Create Readme'``` makes it easier to compaire output (stdout) of the process with some predefined text or the output of other command
-
-### Ways to execute shell
-
-As mentioned above all codeblocks inside of the grave accent ( ` ) symbol will be executed in shell. 
-
-```result = `echo 1` ```
-
-For simplicity it is also possible to leave the symbol only in the beginning of expression. Then the other rest of line will be considered as shell expression:
-
-```result = `echo 1 ```
-
-It is also possible to execute multiline expressions:
-
-```
-result = `
-mkdir /tmp/music
-cp *.mp3 > /tmp/music
-`
-```
-
-And long line expressions:
-
-```
-result = `echo This is \
-a very long line, \
-very very long...
-```
-
-### How it all works
-
-You could mention that the syntax in files is not a correct python syntax and to run it you need to start it with the ```shellpy``` script. Every script has ```.spy``` extension and being executed by ```shellpy``` it is first preprocessed to python and then the resulting python files are added to ```sys.path``` and imported. To import shellpy files the standard import hook is used described in [PEP 0302 -- New Import Hooks](https://www.python.org/dev/peps/pep-0302/)
-
-### Integration with python
-
-The script was designed to be easily integrated with python. Inside .spy script you can import all python libraries as in usual python and use them. There is not differences in syntax except for the one that the grave accent ( \` ) symbol is used not as ```eval``` but as shell execution, everything else is absolutelly the same.
-
-Besides importing python modules, you can reuse and import shellpy modules/files in the very same way you do it for python. You only need to name your files with shellpython as *.spy and if you want to create a module, instead of putting ```__init__.py``` to directory, just put ```__init___.spy```
-
-More information can be found in examples and documentation
+Two lines here are executed in shell ```git clone https://github.com/lamerman/shellpy.git``` and ```git log --pretty=oneline --grep='Create'```. The result of the second line is assigned to variable ```log``` and then we iterate over the result line by line in the for cycle
 
 ### Installation
 
@@ -114,10 +151,6 @@ There is also so called allinone example which you can have a look at and execut
 It is called all in one because it demonstrates all features available in shellpy. If you have python3 run instead:
 
 ```shellpy example/allinone/test3.spy```
-
-### Is it reliable
-
-Shellpython is covered with test and is tested with all major versions of python in Travis CI
 
 ### Documentation
 
