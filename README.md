@@ -155,3 +155,13 @@ It is called all in one because it demonstrates all features available in shellp
 ### Documentation
 
 [Wiki](https://github.com/lamerman/shellpy/wiki)
+
+### Compatibility
+
+It works on Linux and Mac for both Python 2.x and 3.x
+
+### Contact
+
+Please contact me in gitter 
+[![Join the chat at https://gitter.im/lamerman/shellpy](https://badges.gitter.im/lamerman/shellpy.svg)](https://gitter.im/lamerman/shellpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
+if you want to share your thoughts about the project or tell about possible improvements.
