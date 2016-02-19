@@ -35,7 +35,7 @@ Every shellpy exression returns a Result
 
     result = `ls -l
 
-It can be either Result or InteractiveResult. Let's start with a simple Result. First you can check returncode of a command
+It can be either [Result](https://github.com/lamerman/shellpy/wiki/Simple-mode#result) or InteractiveResult. Let's start with a simple Result. First you can check returncode of a command
 
     result = `ls -l
     print result.returncode
@@ -84,7 +84,7 @@ So you have directory `common` and two files inside: `__init__.spy` and `common.
     def common_func():
         return `echo 5
 
-A simple function that returns Result of `echo 5` execution. How is it used how in code? As same as in python
+A simple function that returns [Result](https://github.com/lamerman/shellpy/wiki/Simple-mode#result) of `echo 5` execution. How is it used how in code? As same as in python
 
     from common.common import common_func
     
