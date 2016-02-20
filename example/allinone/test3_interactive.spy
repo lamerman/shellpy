@@ -6,10 +6,13 @@ result = i`ping -c 3 8.8.8.8
 for line in result.stdout:
     print(line)
 
-result = ip`example/hello.py
-result.sreadline()
-result.swriteline('Alexander')
-result.sreadline()
+result = ip`example/allinone/hello.py
+if result.sreadline() == 'Enter your name':
+    result.swriteline('Alexander')
+else:
+    raise RuntimeError('Unexpected output of script')
+
+welcome_text = result.sreadline()
 
 print(result.returncode)
 
