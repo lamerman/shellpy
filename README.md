@@ -35,7 +35,7 @@ Every shellpy exression returns a Result
 
     result = `ls -l
 
-It can be either [Result](https://github.com/lamerman/shellpy/wiki/Simple-mode#result) or InteractiveResult. Let's start with a simple Result. First you can check returncode of a command
+It can be either [Result](https://github.com/lamerman/shellpy/wiki/Simple-mode#result) or [InteractiveResult](https://github.com/lamerman/shellpy/wiki/Interactive-mode#interactive-result). Let's start with a simple Result. First you can check returncode of a command
 
     result = `ls -l
     print result.returncode
