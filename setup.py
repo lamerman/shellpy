@@ -8,7 +8,7 @@ except ImportError:
 
 scriptName = 'shellpy'
 if os.name == 'nt':
-    scriptName = 'shellpy/py'
+    scriptName = 'shellpy.py'
 
 setup(name='shellpy',
       version='0.4.0',
