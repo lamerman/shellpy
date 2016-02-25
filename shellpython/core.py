@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import subprocess
@@ -16,6 +17,13 @@ except ImportError:
 def _is_colorama_enabled():
     return _colorama_available and config.COLORAMA_ENABLED
 
+
+def _print_stdout(text):
+    print(text)
+
+
+def _print_stderr(text):
+    print(text, file=sys.stderr)
 
 _PARAM_PRINT_STDOUT = 'p'  # print all stdout of executed command
 _PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
@@ -37,9 +45,9 @@ def exe(cmd, params):
 
     if config.PRINT_ALL_COMMANDS:
         if _is_colorama_enabled():
-            print(Fore.GREEN + '>>> ' + cmd + Style.RESET_ALL)
+            _print_stdout(Fore.GREEN + '>>> ' + cmd + Style.RESET_ALL)
         else:
-            print('>>> ' + cmd)
+            _print_stdout('>>> ' + cmd)
 
     if _is_param_set(params, _PARAM_INTERACTIVE):
         return _create_interactive_result(cmd, params)
@@ -77,9 +85,9 @@ class Stream:
             line = line.rstrip(os.linesep)
             if self._print_out_stream:
                 if self._color is None:
-                    print(line)
+                    _print_stdout(line)
                 else:
-                    print(self._color + line + Style.RESET_ALL)
+                    _print_stdout(self._color + line + Style.RESET_ALL)
 
             return line
 
@@ -220,14 +228,14 @@ def _create_result(cmd, params):
 
     p.wait()
 
-    if _is_param_set(params, _PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS:
-        print(result.stdout)
+    if (_is_param_set(params, _PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS) and len(result.stdout) > 0:
+        _print_stdout(result.stdout)
 
-    if _is_param_set(params, _PARAM_PRINT_STDERR):
+    if _is_param_set(params, _PARAM_PRINT_STDERR) and len(result.stderr) > 0:
         if _is_colorama_enabled():
-            print(Fore.RED + result.stderr + Style.RESET_ALL)
+            _print_stderr(Fore.RED + result.stderr + Style.RESET_ALL)
         else:
-            print(result.stderr)
+            _print_stderr(result.stderr)
 
     result.returncode = p.returncode
 
