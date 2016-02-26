@@ -144,7 +144,6 @@ You can try shellpython by running examples after installation. Download this re
 
 ```shellpy example/git.spy```
 
-On windows you must run `shellpy.py example\curl.spy`. This is expected to change in future updates.
 
 There is also so called allinone example which you can have a look at and execute like this:
 
