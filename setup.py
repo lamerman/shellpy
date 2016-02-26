@@ -14,7 +14,7 @@ setup(name='shellpy',
       url='https://github.com/lamerman/shellpy/',
       download_url='https://github.com/lamerman/shellpy/tarball/0.4.0',
       keywords=['shell', 'bash', 'sh'],
-      packages=['shellpython'],
+      packages=['shellpython','shellpy'],
       entry_points = {
         'console_scripts': {
             'shellpy = shellpy:main'
