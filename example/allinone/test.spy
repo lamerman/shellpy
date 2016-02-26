@@ -12,7 +12,7 @@ from common.common import common_func
 # iteration over command output
 for line in `ls -l`:
     # print of output with local variable capture
-    print `echo LINE IS: {line}
+    print `echo 'LINE IS: {line}'
 
 # return code capture
 s = `ls -l | grep non_existent_string
