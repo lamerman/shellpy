@@ -1,0 +1,4 @@
+#For testing on windows
+
+r = `ipconfig
+print r.stdout
