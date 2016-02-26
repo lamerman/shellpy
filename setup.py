@@ -14,7 +14,11 @@ setup(name='shellpy',
       download_url='https://github.com/lamerman/shellpy/tarball/0.4.0',
       keywords=['shell', 'bash', 'sh'],
       packages=['shellpython'],
-      scripts=['shellpy'],
+      entry_points = {
+        'console_scripts': {
+            'shellpy = shellpython.shellpy:main'
+        }
+      },
       package_data={'shellpython': ['*.tpl']},
       install_requires=['colorama']
       )
