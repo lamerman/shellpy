@@ -3,6 +3,15 @@ A tool for convenient shell scripting in Python. It allows you to write all your
 
 [![Build Status](https://travis-ci.org/lamerman/shellpy.svg?branch=master)](https://travis-ci.org/lamerman/shellpy)
 [![Join the chat at https://gitter.im/lamerman/shellpy](https://badges.gitter.im/lamerman/shellpy.svg)](https://gitter.im/lamerman/shellpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![PyPI Wheel](http://badge.kloud51.com/pypi/w/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Status](http://badge.kloud51.com/pypi/s/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI License](http://badge.kloud51.com/pypi/l/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Format](http://badge.kloud51.com/pypi/f/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Py_versions](http://badge.kloud51.com/pypi/p/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Downloads](http://badge.kloud51.com/pypi/d/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Implementation](http://badge.kloud51.com/pypi/i/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Version](http://badge.kloud51.com/pypi/v/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
+[![PyPI Egg](http://badge.kloud51.com/pypi/e/shellpy.svg)](https://pypi.python.org/pypi/shellpy)
 
 ## Preface - Why do we need shell python?
 
