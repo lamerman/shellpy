@@ -158,7 +158,7 @@ It is called all in one because it demonstrates all features available in shellp
 
 ### Compatibility
 
-It works on Linux and Mac for both Python 2.x and 3.x
+It works on Linux and Mac for both Python 2.x and 3.x. It should also work on Windows.
 
 ### Contact
 
