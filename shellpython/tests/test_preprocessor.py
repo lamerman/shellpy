@@ -1,4 +1,7 @@
 import unittest
+import getpass
+import tempfile
+import os.path
 from shellpython import preprocessor
 
 
@@ -132,3 +135,13 @@ class TestIntermediateToFinal(unittest.TestCase):
         intermediate = 'x = int_shexe(expr)shexe(param)shexe'
         final = preprocessor._intermediate_to_final(intermediate)
         self.assertEqual(final, "x = exe('expr'.format(**dict(locals(), **globals())),'param')")
+
+
+class TestFileOperations(unittest.TestCase):
+    def test_translate_to_temp(self):
+        username = getpass.getuser()
+        translated_path = preprocessor._translate_to_temp_path('/code/test')
+
+        expected_path = os.path.join(tempfile.gettempdir(), 'shellpy_' + username, 'code/test')
+
+        self.assertEqual(translated_path, expected_path)

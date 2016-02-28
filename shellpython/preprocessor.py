@@ -37,7 +37,8 @@ def preprocess_file(in_filepath, is_root_script):
     """
 
     new_filepath = spy_file_pattern.sub(r"\1.py", in_filepath)
-    out_filename, out_folder_path = _translate_to_temp_path(new_filepath, True)
+    out_filename = _translate_to_temp_path(new_filepath)
+    out_folder_path = os.path.dirname(out_filename)
 
     if not is_root_script and not _is_compilation_needed(in_filepath, out_filename):
         # TODO: cache root also
@@ -80,15 +81,13 @@ def _get_username():
         n = getpass.getuser()
         return n
     except:
-    #returns temporary name. eg: temp1232433
-        from time import time
-        return 'temp'+str(int(time))
+        return 'no_username_found'
     # TODO: what if function does not work
     # TODO: see whether getpass is available everywhere
 
 
-def _translate_to_temp_path(path, getFolderPath=False):
-    """Compiled shellpy files are stored on temp filesystem on path like this /{tmp}/{user}/{real_path_of_file_on_fs}
+def _translate_to_temp_path(path):
+    """Compiled shellpy files are stored on temp filesystem on path like this /{tmp}/shellpy_{user}/{real_path}
     Every user will have its own copy of compiled shellpy files. Since we store them somewhere else relative to
     the place where they actually are, we need a translation function that would allow us to easily get path
     of compiled file
@@ -96,25 +95,11 @@ def _translate_to_temp_path(path, getFolderPath=False):
     :param path: The path to be translated
     :return: The translated path
     """
-    import platform
-
     absolute_path = os.path.abspath(path)
     relative_path = os.path.relpath(absolute_path, os.path.abspath(os.sep))
-
     # TODO: this will not work in win where root is C:\ and absolute_in_path is on D:\
-    # TODO: test this
-    if platform.system().lower().startswith('win'):
-        strip_pattern = r'^\w:\\(.*)'
-        relative_path = re.findall(strip_pattern, absolute_path)[0]
-
-    if getFolderPath:
-        relative_folder_path, file_name = os.path.split(relative_path)
-        folder_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username())
-        translated_path = os.path.join(folder_path, file_name)
-        return translated_path, folder_path
-    else:
-        translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), file_name)
-        return translated_path
+    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy_' + _get_username(), relative_path)
+    return translated_path
 
 
 def _is_compilation_needed(in_filepath, out_filepath):
