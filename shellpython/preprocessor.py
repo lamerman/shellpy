@@ -37,15 +37,15 @@ def preprocess_file(in_filepath, is_root_script):
     """
 
     new_filepath = spy_file_pattern.sub(r"\1.py", in_filepath)
-    out_filename = _translate_to_temp_path(new_filepath)
+    out_filename, out_folder_path = _translate_to_temp_path(new_filepath, True)
 
     if not is_root_script and not _is_compilation_needed(in_filepath, out_filename):
         # TODO: cache root also
         # TODO: if you don't compile but it's root, you need to change to exec
         return out_filename
 
-    if not os.path.exists(os.path.dirname(out_filename)):
-        os.makedirs(os.path.dirname(out_filename), mode=0o700)
+    if not os.path.exists(out_folder_path):
+        os.makedirs(out_folder_path, mode=0o700)
 
     header_data = _get_header(in_filepath, is_root_script)
     out_file_data = header_data
@@ -76,12 +76,22 @@ def _get_username():
 
     :return: The name of current user
     """
-    return getpass.getuser()
+    try:
+        n = getpass.getuser()
+        return n
+    except:
+<<<<<<< HEAD
+    #returns temporary name. eg: temp1232433
+        from time import time
+        return 'temp'+str(int(time))
     # TODO: what if function does not work
     # TODO: see whether getpass is available everywhere
+=======
+        return 'no_username_found'
+>>>>>>> cad63f7... removed for loops from code processing functions. Formatting code with autopep8
 
 
-def _translate_to_temp_path(path):
+def _translate_to_temp_path(path, getFolderPath=False):
     """Compiled shellpy files are stored on temp filesystem on path like this /{tmp}/{user}/{real_path_of_file_on_fs}
     Every user will have its own copy of compiled shellpy files. Since we store them somewhere else relative to
     the place where they actually are, we need a translation function that would allow us to easily get path
@@ -90,11 +100,33 @@ def _translate_to_temp_path(path):
     :param path: The path to be translated
     :return: The translated path
     """
+    import platform
+
     absolute_path = os.path.abspath(path)
     relative_path = os.path.relpath(absolute_path, os.path.abspath(os.sep))
+<<<<<<< HEAD
+
     # TODO: this will not work in win where root is C:\ and absolute_in_path is on D:\
-    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), relative_path)
+    # TODO: test this
+    if platform.system().lower().startswith('win'):
+        strip_pattern = r'^\w:\\(.*)'
+        relative_path = re.findall(strip_pattern, absolute_path)[0]
+
+    if getFolderPath:
+        relative_folder_path, file_name = os.path.split(relative_path)
+        folder_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username())
+        translated_path = os.path.join(folder_path, file_name)
+        return translated_path, folder_path
+    else:
+        translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), file_name)
+        return translated_path
+=======
+    # TODO: this will not work in win where root is C:\ and absolute_in_path
+    # is on D:\
+    translated_path = os.path.join(
+        tempfile.gettempdir(), 'shellpy_' + _get_username(), relative_path)
     return translated_path
+>>>>>>> cad63f7... removed for loops from code processing functions. Formatting code with autopep8
 
 
 def _is_compilation_needed(in_filepath, out_filepath):
@@ -133,14 +165,12 @@ def _get_header(filepath, is_root_script):
     :return: data of the header
     """
     header_name = 'header_root.tpl' if is_root_script else 'header.tpl'
-    header_filename = os.path.join(os.path.split(__file__)[0], header_name)
+    header_filename = os.path.join(os.path.dirname(__file__), header_name)
 
     with open(header_filename, 'r') as f:
         header_data = f.read()
         mod_time = os.path.getmtime(filepath)
-
-        meta = dict()
-        meta['mtime'] = str(mod_time)
+        meta = {'mtime': str(mod_time)}
 
         header_data = header_data.replace('{meta}', json.dumps(meta))
         return header_data
@@ -174,26 +204,23 @@ def _process_multilines(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script with multiline expressions converted to intermediate form
     """
-    code_multiline_pattern = re.compile(r'^([^`\n\r]*?)([a-z]*)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
+    code_multiline_pattern = re.compile(
+        r'^([^`\n\r]*?)([a-z]*)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
 
-    script_data = code_multiline_pattern.sub(r'\1multiline_shexe(\3)shexe(\2)shexe', script_data)
+    script_data = code_multiline_pattern.sub(
+        r'\1multiline_shexe(\3)shexe(\2)shexe', script_data)
 
     pattern = re.compile(r'multiline_shexe.*?shexe', re.DOTALL)
 
-    strings = []
-    processed_string = []
+    new_script_data = script_data
     for match in pattern.finditer(script_data):
         original_str = script_data[match.start():match.end()]
         processed_str = re.sub(r'([\r\n]{1,2})', r'; \\\1', original_str)
 
-        strings.append(original_str)
-        processed_string.append(processed_str)
+        new_script_data = new_script_data.replace(
+            original_str, preprocessed_str)
 
-    pairs = zip(strings, processed_string)
-    for s, ps in pairs:
-        script_data = script_data.replace(s, ps)
-
-    return script_data
+    return new_script_data
 
 
 def _process_long_lines(script_data):
@@ -205,9 +232,11 @@ def _process_long_lines(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_long_line_pattern = re.compile(r'([a-z]*)`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
-    script_data = code_long_line_pattern.sub(r'longline_shexe(\2)shexe(\1)shexe', script_data)
-    return script_data
+    code_long_line_pattern = re.compile(
+        r'([a-z]*)`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
+    new_script_data = code_long_line_pattern.sub(
+        r'longline_shexe(\2)shexe(\1)shexe', script_data)
+    return new_script_data
 
 
 def _process_code_both(script_data):
@@ -219,8 +248,9 @@ def _process_code_both(script_data):
     :return: the shellpy script converted to intermediate form
     """
     code_both_pattern = re.compile(r'([a-z]*)`(.*?)`')
-    script_data = code_both_pattern.sub(r'both_shexe(\2)shexe(\1)shexe', script_data)
-    return script_data
+    new_script_data = code_both_pattern.sub(
+        r'both_shexe(\2)shexe(\1)shexe', script_data)
+    return new_script_data
 
 
 def _process_code_start(script_data):
@@ -230,9 +260,11 @@ def _process_code_start(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_start_pattern = re.compile(r'^([^\n\r`]*?)([a-z]*)`([^`\n\r]+)$', re.MULTILINE)
-    script_data = code_start_pattern.sub(r'\1start_shexe(\3)shexe(\2)shexe', script_data)
-    return script_data
+    code_start_pattern = re.compile(
+        r'^([^\n\r`]*?)([a-z]*)`([^`\n\r]+)$', re.MULTILINE)
+    new_script_data = code_start_pattern.sub(
+        r'\1start_shexe(\3)shexe(\2)shexe', script_data)
+    return new_script_data
 
 
 def _escape(script_data):
@@ -243,22 +275,16 @@ def _escape(script_data):
     """
     pattern = re.compile(r'[a-z]*_shexe.*?shexe', re.DOTALL)
 
-    strings = []
-    processed_string = []
-
+    new_script_data = script_data
     for match in pattern.finditer(script_data):
         original_str = script_data[match.start():match.end()]
         if original_str.find('\'') != -1:
             processed_str = original_str.replace('\'', '\\\'')
 
-            strings.append(original_str)
-            processed_string.append(processed_str)
+            new_script_data = new_script_data.replace(
+                original_str, processed_str)
 
-    pairs = zip(strings, processed_string)
-    for s, ps in pairs:
-        script_data = script_data.replace(s, ps)
-
-    return script_data
+    return new_script_data
 
 
 def _intermediate_to_final(script_data):
@@ -268,5 +294,8 @@ def _intermediate_to_final(script_data):
     :param script_data: the string of the whole script
     :return: python script ready to be executed
     """
-    intermediate_pattern = re.compile(r'[a-z]*_shexe\((.*?)\)shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
-    return intermediate_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())),'\2')", script_data)
+    intermediate_pattern = re.compile(
+        r'[a-z]*_shexe\((.*?)\)shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
+    final_script = intermediate_pattern.sub(
+        r"exe('\1'.format(**dict(locals(), **globals())),'\2')", script_data)
+    return final_script
