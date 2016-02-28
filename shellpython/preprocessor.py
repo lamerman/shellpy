@@ -37,15 +37,15 @@ def preprocess_file(in_filepath, is_root_script):
     """
 
     new_filepath = spy_file_pattern.sub(r"\1.py", in_filepath)
-    out_filename = _translate_to_temp_path(new_filepath)
+    out_filename, out_folder_path = _translate_to_temp_path(new_filepath, True)
 
     if not is_root_script and not _is_compilation_needed(in_filepath, out_filename):
         # TODO: cache root also
         # TODO: if you don't compile but it's root, you need to change to exec
         return out_filename
 
-    if not os.path.exists(os.path.dirname(out_filename)):
-        os.makedirs(os.path.dirname(out_filename), mode=0o700)
+    if not os.path.exists(out_folder_path):
+        os.makedirs(out_folder_path, mode=0o700)
 
     header_data = _get_header(in_filepath, is_root_script)
     out_file_data = header_data
@@ -76,12 +76,18 @@ def _get_username():
 
     :return: The name of current user
     """
-    return getpass.getuser()
+    try:
+        n = getpass.getuser()
+        return n
+    except:
+    #returns temporary name. eg: temp1232433
+        from time import time
+        return 'temp'+str(int(time))
     # TODO: what if function does not work
     # TODO: see whether getpass is available everywhere
 
 
-def _translate_to_temp_path(path):
+def _translate_to_temp_path(path, getFolderPath=False):
     """Compiled shellpy files are stored on temp filesystem on path like this /{tmp}/{user}/{real_path_of_file_on_fs}
     Every user will have its own copy of compiled shellpy files. Since we store them somewhere else relative to
     the place where they actually are, we need a translation function that would allow us to easily get path
@@ -90,11 +96,25 @@ def _translate_to_temp_path(path):
     :param path: The path to be translated
     :return: The translated path
     """
+    import platform
+
     absolute_path = os.path.abspath(path)
     relative_path = os.path.relpath(absolute_path, os.path.abspath(os.sep))
+
     # TODO: this will not work in win where root is C:\ and absolute_in_path is on D:\
-    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), relative_path)
-    return translated_path
+    # TODO: test this
+    if platform.system().lower().startswith('win'):
+        strip_pattern = r'^\w:\\(.*)'
+        relative_path = re.findall(strip_pattern, absolute_path)[0]
+
+    if getFolderPath:
+        relative_folder_path, file_name = os.path.split(relative_path)
+        folder_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username())
+        translated_path = os.path.join(folder_path, file_name)
+        return translated_path, folder_path
+    else:
+        translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), file_name)
+        return translated_path
 
 
 def _is_compilation_needed(in_filepath, out_filepath):
@@ -133,14 +153,12 @@ def _get_header(filepath, is_root_script):
     :return: data of the header
     """
     header_name = 'header_root.tpl' if is_root_script else 'header.tpl'
-    header_filename = os.path.join(os.path.split(__file__)[0], header_name)
+    header_filename = os.path.join(os.path.dirname(__file__), header_name)
 
     with open(header_filename, 'r') as f:
         header_data = f.read()
         mod_time = os.path.getmtime(filepath)
-
-        meta = dict()
-        meta['mtime'] = str(mod_time)
+        meta = {'mtime' : str(mod_time)}
 
         header_data = header_data.replace('{meta}', json.dumps(meta))
         return header_data
