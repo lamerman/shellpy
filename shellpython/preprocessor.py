@@ -93,7 +93,7 @@ def _translate_to_temp_path(path):
     absolute_path = os.path.abspath(path)
     relative_path = os.path.relpath(absolute_path, os.path.abspath(os.sep))
     # TODO: this will not work in win where root is C:\ and absolute_in_path is on D:\
-    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy', _get_username(), relative_path)
+    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy_' + _get_username(), relative_path)
     return translated_path
 
 
