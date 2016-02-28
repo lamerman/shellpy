@@ -3,20 +3,21 @@ import sys
 import os
 import subprocess
 from shellpython.preprocessor import preprocess_file
+from argparse import ArgumentParser
+import re
 
 
 def main():
-    if len(sys.argv) == 1 or sys.argv[1] in ['-h', '--help', 'help']:
-        print('Shellpy, write shell scripts in Python easily')
-        print('Usage: shellpy [*.spy script] [arguments]')
-        exit(0)
+    def shellpyFile(fil):
+        if not re.match('.+\.spy$', fil):
+            parser.error('Shellpy can only run *.spy files')
+        return fil
 
-    filename = sys.argv[1]
+    parser = ArgumentParser(description='Shellpy, write shell scripts in Python easily')
+    parser.add_argument('file', help='path to spy file', type = shellpyFile)
+    args = parser.parse_args()
 
-    if not filename.endswith('.spy'):
-        print('Error: Shellpy can only run *.spy files')
-        print('Usage: shellpy [*.spy script] [arguments]')
-        exit(1)
+    filename = args.file
 
     processed_file = preprocess_file(filename, is_root_script=True)
 
