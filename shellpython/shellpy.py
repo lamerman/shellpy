@@ -13,11 +13,16 @@ def main():
             parser.error('Shellpy can only run *.spy files')
         return fil
 
-    parser = ArgumentParser(description='Shellpy, write shell scripts in Python easily')
+    parser = ArgumentParser(description='Shellpy, write shell scripts in Python easily',
+            usage='%(prog)s [SHELLPY ARGS] shellpy_script.spy [SCRIPT ARGS]')
     parser.add_argument('file', help='path to spy file', type = shellpyFile)
-    args = parser.parse_args()
+    shellpy_args, unknown_args = parser.parse_known_args()
 
-    filename = args.file
+    filename = shellpy_args.file
+    i = sys.argv.index(filename)
+    #remove script arguments given before script name
+    #comment out if want to keep them
+    script_args = [ x for x in unknown_args if x not in sys.argv[:i]]
 
     processed_file = preprocess_file(filename, is_root_script=True)
 
@@ -25,7 +30,7 @@ def main():
     new_env = os.environ.copy()
     new_env['PYTHONPATH'] = new_env.get("PYTHONPATH", '') + os.pathsep + os.path.split(filename)[0]
 
-    retcode = subprocess.call(processed_file + ' ' + ' '.join(sys.argv[2:]), shell=True, env=new_env)
+    retcode = subprocess.call(processed_file + ' ' + ' '.join(script_args), shell=True, env=new_env)
     exit(retcode)
 
 
