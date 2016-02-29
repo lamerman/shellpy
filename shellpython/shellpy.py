@@ -8,13 +8,21 @@ import re
 
 
 def main():
+    custom_usage ='''%(prog)s [SHELLPY ARGS] shellpy_script.spy [SCRIPT ARGS]
+
+For arguments help use:
+    %(prog)s --help
+    '''
+    custom_epilog = '''github : github.com/lamerman/shellpy'''
+
+
     def shellpyFile(fil):
         if not re.match('.+\.spy$', fil):
             parser.error('Shellpy can only run *.spy files')
         return fil
 
     parser = ArgumentParser(description='Shellpy, write shell scripts in Python easily',
-            usage='%(prog)s [SHELLPY ARGS] shellpy_script.spy [SCRIPT ARGS]')
+            usage=custom_usage, epilog=custom_epilog)
     parser.add_argument('file', help='path to spy file', type = shellpyFile)
     shellpy_args, unknown_args = parser.parse_known_args()
 
@@ -28,7 +36,7 @@ def main():
 
     # include directory of the script to pythonpath
     new_env = os.environ.copy()
-    new_env['PYTHONPATH'] = new_env.get("PYTHONPATH", '') + os.pathsep + os.path.split(filename)[0]
+    new_env['PYTHONPATH'] = new_env.get("PYTHONPATH", '') + os.pathsep + os.path.dirname(filename)
 
     retcode = subprocess.call(processed_file + ' ' + ' '.join(script_args), shell=True, env=new_env)
     exit(retcode)
