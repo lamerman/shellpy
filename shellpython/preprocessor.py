@@ -82,8 +82,6 @@ def _get_username():
         return n
     except:
         return 'no_username_found'
-    # TODO: what if function does not work
-    # TODO: see whether getpass is available everywhere
 
 
 def _translate_to_temp_path(path):
@@ -97,8 +95,10 @@ def _translate_to_temp_path(path):
     """
     absolute_path = os.path.abspath(path)
     relative_path = os.path.relpath(absolute_path, os.path.abspath(os.sep))
-    # TODO: this will not work in win where root is C:\ and absolute_in_path is on D:\
-    translated_path = os.path.join(tempfile.gettempdir(), 'shellpy_' + _get_username(), relative_path)
+    # TODO: this will not work in win where root is C:\ and absolute_in_path
+    # is on D:\
+    translated_path = os.path.join(
+        tempfile.gettempdir(), 'shellpy_' + _get_username(), relative_path)
     return translated_path
 
 
@@ -143,7 +143,7 @@ def _get_header(filepath, is_root_script):
     with open(header_filename, 'r') as f:
         header_data = f.read()
         mod_time = os.path.getmtime(filepath)
-        meta = {'mtime' : str(mod_time)}
+        meta = {'mtime': str(mod_time)}
 
         header_data = header_data.replace('{meta}', json.dumps(meta))
         return header_data
@@ -177,26 +177,23 @@ def _process_multilines(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script with multiline expressions converted to intermediate form
     """
-    code_multiline_pattern = re.compile(r'^([^`\n\r]*?)([a-z]*)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
+    code_multiline_pattern = re.compile(
+        r'^([^`\n\r]*?)([a-z]*)`\s*?$[\n\r]{1,2}(.*?)`\s*?$', re.MULTILINE | re.DOTALL)
 
-    script_data = code_multiline_pattern.sub(r'\1multiline_shexe(\3)shexe(\2)shexe', script_data)
+    script_data = code_multiline_pattern.sub(
+        r'\1multiline_shexe(\3)shexe(\2)shexe', script_data)
 
     pattern = re.compile(r'multiline_shexe.*?shexe', re.DOTALL)
 
-    strings = []
-    processed_string = []
+    new_script_data = script_data
     for match in pattern.finditer(script_data):
         original_str = script_data[match.start():match.end()]
         processed_str = re.sub(r'([\r\n]{1,2})', r'; \\\1', original_str)
 
-        strings.append(original_str)
-        processed_string.append(processed_str)
+        new_script_data = new_script_data.replace(
+            original_str, preprocessed_str)
 
-    pairs = zip(strings, processed_string)
-    for s, ps in pairs:
-        script_data = script_data.replace(s, ps)
-
-    return script_data
+    return new_script_data
 
 
 def _process_long_lines(script_data):
@@ -208,9 +205,11 @@ def _process_long_lines(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_long_line_pattern = re.compile(r'([a-z]*)`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
-    script_data = code_long_line_pattern.sub(r'longline_shexe(\2)shexe(\1)shexe', script_data)
-    return script_data
+    code_long_line_pattern = re.compile(
+        r'([a-z]*)`(((.*?\\\s*?$)[\n\r]{1,2})+(.*$))', re.MULTILINE)
+    new_script_data = code_long_line_pattern.sub(
+        r'longline_shexe(\2)shexe(\1)shexe', script_data)
+    return new_script_data
 
 
 def _process_code_both(script_data):
@@ -222,8 +221,9 @@ def _process_code_both(script_data):
     :return: the shellpy script converted to intermediate form
     """
     code_both_pattern = re.compile(r'([a-z]*)`(.*?)`')
-    script_data = code_both_pattern.sub(r'both_shexe(\2)shexe(\1)shexe', script_data)
-    return script_data
+    new_script_data = code_both_pattern.sub(
+        r'both_shexe(\2)shexe(\1)shexe', script_data)
+    return new_script_data
 
 
 def _process_code_start(script_data):
@@ -233,9 +233,11 @@ def _process_code_start(script_data):
     :param script_data: the string of the whole script
     :return: the shellpy script converted to intermediate form
     """
-    code_start_pattern = re.compile(r'^([^\n\r`]*?)([a-z]*)`([^`\n\r]+)$', re.MULTILINE)
-    script_data = code_start_pattern.sub(r'\1start_shexe(\3)shexe(\2)shexe', script_data)
-    return script_data
+    code_start_pattern = re.compile(
+        r'^([^\n\r`]*?)([a-z]*)`([^`\n\r]+)$', re.MULTILINE)
+    new_script_data = code_start_pattern.sub(
+        r'\1start_shexe(\3)shexe(\2)shexe', script_data)
+    return new_script_data
 
 
 def _escape(script_data):
@@ -246,22 +248,16 @@ def _escape(script_data):
     """
     pattern = re.compile(r'[a-z]*_shexe.*?shexe', re.DOTALL)
 
-    strings = []
-    processed_string = []
-
+    new_script_data = script_data
     for match in pattern.finditer(script_data):
         original_str = script_data[match.start():match.end()]
         if original_str.find('\'') != -1:
             processed_str = original_str.replace('\'', '\\\'')
 
-            strings.append(original_str)
-            processed_string.append(processed_str)
+            new_script_data = new_script_data.replace(
+                original_str, processed_str)
 
-    pairs = zip(strings, processed_string)
-    for s, ps in pairs:
-        script_data = script_data.replace(s, ps)
-
-    return script_data
+    return new_script_data
 
 
 def _intermediate_to_final(script_data):
@@ -271,5 +267,8 @@ def _intermediate_to_final(script_data):
     :param script_data: the string of the whole script
     :return: python script ready to be executed
     """
-    intermediate_pattern = re.compile(r'[a-z]*_shexe\((.*?)\)shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
-    return intermediate_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())),'\2')", script_data)
+    intermediate_pattern = re.compile(
+        r'[a-z]*_shexe\((.*?)\)shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
+    final_script = intermediate_pattern.sub(
+        r"exe('\1'.format(**dict(locals(), **globals())),'\2')", script_data)
+    return final_script
