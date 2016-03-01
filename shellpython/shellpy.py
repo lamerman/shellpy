@@ -29,18 +29,15 @@ For arguments help use:
     filename_index = sys.argv.index(filename)
     # remove script arguments given before script name
     # comment out if want to keep them
-    script_args = [
-        x for x in unknown_args if x not in sys.argv[:filename_index]]
+    script_args = [x for x in unknown_args if x not in sys.argv[:filename_index]]
 
     processed_file = preprocess_file(filename, is_root_script=True)
 
     # include directory of the script to pythonpath
     new_env = os.environ.copy()
-    new_env['PYTHONPATH'] = new_env.get(
-        "PYTHONPATH", '') + os.pathsep + os.path.dirname(filename)
+    new_env['PYTHONPATH'] = new_env.get("PYTHONPATH", '') + os.pathsep + os.path.dirname(filename)
 
-    retcode = subprocess.call(
-        processed_file + ' ' + ' '.join(script_args), shell=True, env=new_env)
+    retcode = subprocess.call(processed_file + ' ' + ' '.join(script_args), shell=True, env=new_env)
     exit(retcode)
 
 
