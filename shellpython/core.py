@@ -116,7 +116,7 @@ class InteractiveResult:
         print_stdout = _is_param_set(params, _PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS
         self.stdout = Stream(process.stdout, sys.stdout.encoding, print_stdout)
 
-        print_stderr = _is_param_set(params, _PARAM_PRINT_STDERR)
+        print_stderr = _is_param_set(params, _PARAM_PRINT_STDERR) or config.PRINT_STDERR_ALWAYS
         color = None if not _is_colorama_enabled() else Fore.RED
         self.stderr = Stream(process.stderr, sys.stderr.encoding, print_stderr, color)
 
@@ -231,7 +231,7 @@ def _create_result(cmd, params):
     if (_is_param_set(params, _PARAM_PRINT_STDOUT) or config.PRINT_STDOUT_ALWAYS) and len(result.stdout) > 0:
         _print_stdout(result.stdout)
 
-    if _is_param_set(params, _PARAM_PRINT_STDERR) and len(result.stderr) > 0:
+    if (_is_param_set(params, _PARAM_PRINT_STDERR) or config.PRINT_STDERR_ALWAYS) and len(result.stderr) > 0:
         if _is_colorama_enabled():
             _print_stderr(Fore.RED + result.stderr + Style.RESET_ALL)
         else:
