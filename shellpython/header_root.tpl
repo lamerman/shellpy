@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#shellpy-encoding
 #shellpy-meta:{meta}
 
 import sys

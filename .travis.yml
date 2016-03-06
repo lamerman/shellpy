@@ -9,6 +9,7 @@ python:
   - "pypy3"
 install:
   - pip install .
+  - pip install mock
   - python ./setup.py install
 script:
   - python -m unittest discover

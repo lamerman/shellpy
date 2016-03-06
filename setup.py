@@ -26,5 +26,6 @@ setup(name='shellpy',
       packages=['shellpython'],
       package_data={'shellpython': ['*.tpl']},
       install_requires=['colorama'],
+      tests_require=['mock'],
       **args_for_setup
       )
