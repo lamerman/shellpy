@@ -2,6 +2,7 @@ import unittest
 import getpass
 import tempfile
 import os.path
+import mock
 from shellpython import preprocessor
 
 
@@ -145,3 +146,78 @@ class TestFileOperations(unittest.TestCase):
         expected_path = os.path.join(tempfile.gettempdir(), 'shellpy_' + username, 'code/test')
 
         self.assertEqual(translated_path, expected_path)
+
+
+class TestMeta(unittest.TestCase):
+    def setUp(self):
+        cur_dir = os.path.split(__file__)[0]
+        self.test_dir = os.path.join(cur_dir, 'data', 'preprocessor')
+
+    @mock.patch('os.path.getmtime', return_value=1111111111.11)
+    def test_is_compilation_needed_time_match(self, getmtime_mock_arg):
+        compilation_needed = preprocessor._is_compilation_needed('mocked_spy_file',
+                                                                 os.path.join(self.test_dir, 'meta.py'))
+        self.assertFalse(compilation_needed)
+
+    @mock.patch('os.path.getmtime', return_value=0)
+    def test_is_compilation_needed_time_not_match(self, getmtime_mock_arg):
+        compilation_needed = preprocessor._is_compilation_needed('mocked_spy_file',
+                                                                 os.path.join(self.test_dir, 'meta.py'))
+        self.assertTrue(compilation_needed)
+
+    def test_is_compilation_needed_out_does_not_exist(self):
+        compilation_needed = preprocessor._is_compilation_needed('mocked_spy_file',
+                                                                 'non_existing_py_file')
+        self.assertTrue(compilation_needed)
+
+
+class TestEncoding(unittest.TestCase):
+
+    def setUp(self):
+        self.header_text = '''#!/usr/bin/env python
+#shellpy-encoding
+#shellpy-meta:{meta}
+
+import sys
+import os
+'''
+
+        self.header_text_with_encoding = '''#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#shellpy-meta:{meta}
+
+import sys
+import os
+'''
+
+    def test_no_encoding(self):
+        script_text = '''print 1
+'''
+        header_text_with_encoding = preprocessor._add_encoding_to_header(self.header_text, script_text)
+        self.assertEqual(header_text_with_encoding, self.header_text)
+
+    def test_encoding_on_first_line(self):
+        script_text = '''# -*- coding: utf-8 -*-
+print 1
+'''
+        header_text_with_encoding = preprocessor._add_encoding_to_header(self.header_text, script_text)
+        self.assertEqual(header_text_with_encoding, self.header_text_with_encoding)
+
+    def test_encoding_on_second_line(self):
+        script_text = '''#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+print 1
+'''
+        header_text_with_encoding = preprocessor._add_encoding_to_header(self.header_text, script_text)
+        self.assertEqual(header_text_with_encoding, self.header_text_with_encoding)
+
+    def test_encoding_on_third_line(self):
+        script_text = '''#!/usr/bin/env python
+# some comment
+# -*- coding: utf-8 -*-
+print 1
+'''
+        header_text_with_encoding = preprocessor._add_encoding_to_header(self.header_text, script_text)
+        self.assertEqual(header_text_with_encoding, self.header_text)
+
+

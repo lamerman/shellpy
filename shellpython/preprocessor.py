@@ -8,6 +8,7 @@ import json
 
 spy_file_pattern = re.compile(r'(.*)\.spy$')
 shellpy_meta_pattern = re.compile(r'#shellpy-meta:(.*)')
+shellpy_encoding_pattern = '#shellpy-encoding'
 
 
 def preprocess_module(module_path):
@@ -49,10 +50,11 @@ def preprocess_file(in_filepath, is_root_script):
         os.makedirs(out_folder_path, mode=0o700)
 
     header_data = _get_header(in_filepath, is_root_script)
-    out_file_data = header_data
 
     with open(in_filepath, 'r') as f:
         code = f.read()
+
+        out_file_data = _add_encoding_to_header(header_data, code)
 
         intermediate = _preprocess_code_to_intermediate(code)
         processed_code = _intermediate_to_final(intermediate)
@@ -114,7 +116,7 @@ def _is_compilation_needed(in_filepath, out_filepath):
     in_mtime = os.path.getmtime(in_filepath)
 
     with open(out_filepath, 'r') as f:
-        for i in range(0, 2):  # scan only for two first lines
+        for i in range(0, 3):  # scan only for three first lines
             line = f.readline()
             line_result = shellpy_meta_pattern.search(line)
             if line_result:
@@ -262,3 +264,27 @@ def _intermediate_to_final(script_data):
     intermediate_pattern = re.compile(r'[a-z]*_shexe\((.*?)\)shexe\((.*?)\)shexe', re.MULTILINE | re.DOTALL)
     final_script = intermediate_pattern.sub(r"exe('\1'.format(**dict(locals(), **globals())),'\2')", script_data)
     return final_script
+
+
+def _add_encoding_to_header(header_data, script_data):
+    """PEP-0263 defines a way to specify python file encoding. If this encoding is present in first
+    two lines of a shellpy script it will then be moved to the top generated output file
+
+    :param script_data: the string of the whole script
+    :return: the script with the encoding moved to top, if it's present
+    """
+    encoding_pattern = re.compile(r'^(#[-*\s]*coding[:=]\s*([-\w.]+)[-*\s]*)$')
+
+    # we use \n here instead of os.linesep since \n is universal as it is present in all OSes
+    # when \r\n returned by os.linesep may not work if you run against unix files from win
+    first_two_lines = script_data.split('\n')[:2]
+    for line in first_two_lines:
+        encoding = encoding_pattern.search(line)
+        if encoding is not None:
+            break
+
+    if not encoding:
+        return header_data
+    else:
+        new_header_data = header_data.replace(shellpy_encoding_pattern, encoding.group(1))
+        return new_header_data
