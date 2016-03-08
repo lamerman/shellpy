@@ -96,6 +96,12 @@ Note that the `common` directory must be in pythonpath to be imported.
 
 It uses import hooks described in [PEP 0302 -- New Import Hooks](https://www.python.org/dev/peps/pep-0302/). So, whenever importer finds a shellpy module or a file with .spy extension and with the name that you import, it will try to first preprocess it from shellpy to python and then import it using standard python import. Once preprocessed, the file is cached in your system temp directory and the second time it will be just imported directly.
 
+### Important note about import
+
+Import of shellpython modules requires import hook to be installed. There are two way how to do it:
+ - run shellpython scripts with the `shellpy` tool as described below in the section [Running](https://github.com/lamerman/shellpy#running)
+ - run your python scripts as usual with `python` but initialize shellpython before importing any module with `shellpython.init()` as in the [Example](https://github.com/lamerman/shellpy/blob/master/example/import_from_python/import.py)
+
 ### Example
 
 This script clones shellpython to temporary directory and finds the commit hash where README was created
