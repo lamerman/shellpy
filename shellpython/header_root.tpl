@@ -6,7 +6,7 @@ import os
 import shellpython
 import shellpython.config
 from shellpython.constants import *
-from shellpython.core import exe, _print_stderr as shellpy_print_stderr
+from shellpython.core import exe, NonZeroReturnCodeError, _print_stderr as shellpy_print_stderr
 
 if __name__ == '__main__':
     shellpython.init()

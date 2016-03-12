@@ -1,0 +1,21 @@
+#!/usr/bin/env shellpy
+"""
+This script downloads avatar of github user 'python' with curl
+For shellpython EXPERIMENTAL mode
+"""
+
+import json
+import os
+import tempfile
+
+# get the api answer with curl
+answer = `curl https://api.github.com/users/python
+
+answer_json = json.loads(answer.stdout)
+avatar_url = answer_json['avatar_url']
+
+destination = os.path.join(tempfile.gettempdir(), 'python.png')
+
+# execute curl once again, this time to get the image
+result = `curl {avatar_url} > {destination}
+p`ls -l {destination}

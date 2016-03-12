@@ -2,6 +2,9 @@ import pickle
 import base64
 import sys
 
+# TODO: subject for further refactoring. Config should be serialized in nicer way. Now we cannot do it unless we break
+# compatibility
+
 # prints all commands being executed
 PRINT_ALL_COMMANDS = False
 
@@ -12,6 +15,7 @@ PRINT_STDOUT_ALWAYS = False
 PRINT_STDERR_ALWAYS = False
 
 # every error (returncode != 0) in executed commands will make the script stop
+# TODO: subject for further refactoring. It does not exit not, but throw an error
 EXIT_ON_ERROR = False
 
 # colorama is a plugin that makes output colored, this flag controls whether it is enabled

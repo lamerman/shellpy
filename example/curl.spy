@@ -1,3 +1,4 @@
+#!/usr/bin/env shellpy
 """
 This script downloads avatar of github user 'python' with curl
 """

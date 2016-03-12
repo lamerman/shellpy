@@ -29,6 +29,13 @@ For arguments help use:
                         action="store_true")
     parser.add_argument('-vv', help='even bigger output verbosity. All stdout and stderr of executed commands is '
                                     'printed', action="store_true")
+    parser.add_argument('-t', '--throw-on-error', help='Throw NonZeroReturnCodeError on every non zero output of '
+                                                       'shell commands',
+                        action="store_true")
+    parser.add_argument('-x', '--experimental-mode', help='Runs shellpython in experimental mode. This is what could '
+                                                          'be a normal mode in the future. This mode now enables '
+                                                          'the throw-on-error flag', action="store_true")
+
     shellpy_args, unknown_args = parser.parse_known_args()
 
     if shellpy_args.verbose or shellpy_args.vv:
@@ -37,6 +44,9 @@ For arguments help use:
     if shellpy_args.vv:
         config.PRINT_STDOUT_ALWAYS = True
         config.PRINT_STDERR_ALWAYS = True
+
+    if shellpy_args.throw_on_error or shellpy_args.experimental_mode:
+        config.EXIT_ON_ERROR = True
 
     filename = shellpy_args.file
     filename_index = sys.argv.index(filename)

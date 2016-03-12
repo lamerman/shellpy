@@ -1,3 +1,4 @@
+#!/usr/bin/env shellpy
 """
 This script clones shellpython to temporary directory and finds the commit hash where README was created
 """
