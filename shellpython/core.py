@@ -25,9 +25,18 @@ def _print_stdout(text):
 def _print_stderr(text):
     print(text, file=sys.stderr)
 
-_PARAM_PRINT_STDOUT = 'p'  # print all stdout of executed command
-_PARAM_PRINT_STDERR = 'e'  # print all stderr of executed command
-_PARAM_INTERACTIVE = 'i'  # runs command in interactive mode when user can read output line by line and send to stdin
+# print all stdout of executed command
+_PARAM_PRINT_STDOUT = 'p'
+
+# print all stderr of executed command
+_PARAM_PRINT_STDERR = 'e'
+
+# runs command in interactive mode when user can read output line by line and send to stdin
+_PARAM_INTERACTIVE = 'i'
+
+# no throw mode. With this parameter user explicitly says that NonZeroReturnCodeError must not be thrown for this
+# specific command. It may be useful if for some reason this command does not return 0 even for successful run
+_PARAM_NO_THROW = 'n'
 
 
 def exe(cmd, params):
@@ -57,6 +66,29 @@ def exe(cmd, params):
 
 def _is_param_set(params, param):
     return True if params.find(param) != -1 else False
+
+
+class ShellpyError(Exception):
+    """Base error for shell python
+    """
+    pass
+
+
+class NonZeroReturnCodeError(ShellpyError):
+    """This is thrown when the executed command does not return 0
+    """
+    def __init__(self, cmd, result):
+        self.cmd = cmd
+        self.result = result
+
+    def __str__(self):
+        if _is_colorama_enabled():
+            return 'Command {red}\'{cmd}\'{end} failed with error code {code}, stderr output is {red}{stderr}{end}'\
+                .format(red=Fore.RED, end=Style.RESET_ALL, cmd=self.cmd, code=self.result.returncode,
+                        stderr=self.result.stderr)
+        else:
+            return 'Command \'{cmd}\' failed with error code {code}, stderr output is {stderr}'.format(
+                    cmd=self.cmd, code=self.result.returncode, stderr=self.result.stderr)
 
 
 class Stream:
@@ -239,8 +271,8 @@ def _create_result(cmd, params):
 
     result.returncode = p.returncode
 
-    if config.EXIT_ON_ERROR and p.returncode != 0:
-        exit(p.returncode)
+    if config.EXIT_ON_ERROR and p.returncode != 0 and not _is_param_set(params, _PARAM_NO_THROW):
+        raise NonZeroReturnCodeError(cmd, result)
 
     return result
 
