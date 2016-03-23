@@ -34,8 +34,15 @@ and long lines
 Every shellpy exression returns a Result
 
     result = `ls -l
+    
+or normally raises an error in case of non zero output of a command
 
-It can be either [Result](https://github.com/lamerman/shellpy/wiki/Simple-mode#result) or [InteractiveResult](https://github.com/lamerman/shellpy/wiki/Interactive-mode#interactive-result). Let's start with a simple Result. First you can check returncode of a command
+    try:
+      result = `ls -l non_existent_file
+    except NonZeroReturnCodeError as e:
+      result = e.result
+
+The result can be either [Result](https://github.com/lamerman/shellpy/wiki/Simple-mode#result) or [InteractiveResult](https://github.com/lamerman/shellpy/wiki/Interactive-mode#interactive-result). Let's start with a simple Result. You can check returncode of a command
 
     result = `ls -l
     print result.returncode
@@ -53,17 +60,6 @@ You can iterate over lines of result stdout
         print line.upper()
 
 and so on. 
-
-It also has syntactic sugar for some operations like checking result for zero
-
-    result = `ls -l
-    if result:
-        print 'Return code for ls -l was 0'
-
-Or getting stdout
-
-    result = `ls -l
-    print result
 
 ## Integration with python and code reuse
 
