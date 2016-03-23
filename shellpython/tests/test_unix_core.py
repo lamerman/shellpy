@@ -36,7 +36,11 @@ class TestExecute(unittest.TestCase):
         self.assertEqual(len(self.stderr_mock.lines), 0)
 
     def test_simple_echo_failure(self):
-        result = core._create_result('cat non_existent_file', '')
+        with self.assertRaises(core.NonZeroReturnCodeError) as cm:
+            core._create_result('cat non_existent_file', '')
+
+        result = cm.exception.result
+
         self.assertNotEqual(result.returncode, 0)
 
         self.assertEqual(result.stdout, '')
@@ -57,7 +61,10 @@ class TestExecute(unittest.TestCase):
         self.assertEqual(len(self.stderr_mock.lines), 0)
 
     def test_param_e(self):
-        result = core._create_result('cat non_existent_file', 'e')
+        with self.assertRaises(core.NonZeroReturnCodeError) as cm:
+            core._create_result('cat non_existent_file', 'e')
+
+        result = cm.exception.result
 
         self.assertEqual(len(self.stdout_mock.lines), 0)
 
@@ -70,7 +77,8 @@ class TestExecute(unittest.TestCase):
         self.assertEqual(len(self.stderr_mock.lines), 0)
 
     def test_param_p_no_stdout(self):
-        core._create_result('cat non_existent_file', 'p')
+        with self.assertRaises(core.NonZeroReturnCodeError):
+            core._create_result('cat non_existent_file', 'p')
 
         self.assertEqual(len(self.stdout_mock.lines), 0)
 
@@ -112,8 +120,4 @@ class TestExecute(unittest.TestCase):
 
         self.assertEqual(len(self.stdout_mock.lines), 1)
         self.assertEqual(self.stdout_mock.lines[0], '>>> echo 1')
-
-    @mock.patch('shellpython.config.EXIT_ON_ERROR', True)
-    def test_throw_on_error_mode(self):
-        self.assertRaises(core.NonZeroReturnCodeError, core.exe, 'ls -l /non_existent_file', '')
 

@@ -14,16 +14,12 @@ PRINT_STDOUT_ALWAYS = False
 # prints stderr of every command executed
 PRINT_STDERR_ALWAYS = False
 
-# every error (returncode != 0) in executed commands will make the script stop
-# TODO: subject for further refactoring. It does not exit not, but throw an error
-EXIT_ON_ERROR = False
-
 # colorama is a plugin that makes output colored, this flag controls whether it is enabled
 COLORAMA_ENABLED = True
 
 
 def dumps():
-    config_tuple = (PRINT_ALL_COMMANDS, PRINT_STDOUT_ALWAYS, PRINT_STDERR_ALWAYS, EXIT_ON_ERROR, COLORAMA_ENABLED)
+    config_tuple = (PRINT_ALL_COMMANDS, PRINT_STDOUT_ALWAYS, PRINT_STDERR_ALWAYS, COLORAMA_ENABLED)
     serialized_config = pickle.dumps(config_tuple)
 
     if sys.version_info[0] == 2:
@@ -33,7 +29,7 @@ def dumps():
 
 
 def loads(data):
-    global PRINT_ALL_COMMANDS, PRINT_STDOUT_ALWAYS, PRINT_STDERR_ALWAYS, EXIT_ON_ERROR, COLORAMA_ENABLED
+    global PRINT_ALL_COMMANDS, PRINT_STDOUT_ALWAYS, PRINT_STDERR_ALWAYS, COLORAMA_ENABLED
 
     if sys.version_info[0] == 2:
         serialized_config = base64.b64decode(data)
@@ -42,4 +38,4 @@ def loads(data):
 
     config_tuple = pickle.loads(serialized_config)
 
-    PRINT_ALL_COMMANDS, PRINT_STDOUT_ALWAYS, PRINT_STDERR_ALWAYS, EXIT_ON_ERROR, COLORAMA_ENABLED = config_tuple
+    PRINT_ALL_COMMANDS, PRINT_STDOUT_ALWAYS, PRINT_STDERR_ALWAYS, COLORAMA_ENABLED = config_tuple

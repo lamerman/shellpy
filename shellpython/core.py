@@ -271,7 +271,7 @@ def _create_result(cmd, params):
 
     result.returncode = p.returncode
 
-    if config.EXIT_ON_ERROR and p.returncode != 0 and not _is_param_set(params, _PARAM_NO_THROW):
+    if p.returncode != 0 and not _is_param_set(params, _PARAM_NO_THROW):
         raise NonZeroReturnCodeError(cmd, result)
 
     return result
