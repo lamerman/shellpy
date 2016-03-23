@@ -1,5 +1,6 @@
 #import and use of usual python modules
 import os
+from shellpython import core
 print (os.name)
 
 from shellpython import config as config
@@ -15,14 +16,11 @@ for line in `ls -l`:
     print(`echo 'LINE IS: {line}'`)
 
 # return code capture
-s = `ls -l | grep non_existent_string
-if s.returncode == 0:
+try:
+    s = `ls -l | grep non_existent_string
     print('string found')
-else:
+except core.NonZeroReturnCodeError:
     print('string not found')
-
-if not s:
-    print('short form return code checking')
 
 # execution of function from imported module
 print('Result of imported function is ' + str(common_func()))
@@ -62,9 +60,13 @@ echo Line two of multiline
 
 # std error stream test
 
-e`ls -l /non_existent_directory
-x = `ls -l /non_existent_directory2
-print(x.stderr)
+# this line will just print stderr ('e' flag) without throwing an exception because of the 'n' (no throw) flag
+en`ls -l /non_existent_directory
+
+try:
+    x = `ls -l /non_existent_directory2
+except core.NonZeroReturnCodeError as e:
+    print(e.result.stderr)
 
 # escaped
 
