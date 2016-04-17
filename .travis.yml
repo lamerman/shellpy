@@ -15,5 +15,5 @@ script:
   - python -m unittest discover
 
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then shellpy example/allinone/test.spy;  fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then shellpy example/allinone/test3.spy; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then shellpy3 example/allinone/test3.spy; fi
   - example/import_from_python/import.py

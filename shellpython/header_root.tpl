@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#shellpy-python-executable
 #shellpy-encoding
 #shellpy-meta:{meta}
 

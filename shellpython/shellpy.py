@@ -9,7 +9,15 @@ from argparse import ArgumentParser
 from shellpython.constants import *
 
 
-def main():
+def main2():
+    main(python_version=2)
+
+
+def main3():
+    main(python_version=3)
+
+
+def main(python_version):
     custom_usage = '''%(prog)s [SHELLPY ARGS] file [SCRIPT ARGS]
 
 For arguments help use:
@@ -45,7 +53,7 @@ For arguments help use:
     # comment out if want to keep them
     script_args = [x for x in unknown_args if x not in sys.argv[:filename_index]]
 
-    processed_file = preprocess_file(filename, is_root_script=True)
+    processed_file = preprocess_file(filename, is_root_script=True, python_version=python_version)
 
     # include directory of the script to pythonpath
     new_env = os.environ.copy()
