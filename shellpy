@@ -1,1 +1,4 @@
-shellpython/shellpy.py
+#!/usr/bin/env python
+from shellpython import shellpy
+
+shellpy.main2()

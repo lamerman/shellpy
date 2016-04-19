@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+from shellpython import shellpy
+
+shellpy.main3()

@@ -5,7 +5,9 @@ try:
 
     args_for_setup = {'entry_points': {
         'console_scripts': {
-            'shellpy = shellpython.shellpy:main'
+            'shellpy = shellpython.shellpy:main2',
+            'shellpy2 = shellpython.shellpy:main2',
+            'shellpy3 = shellpython.shellpy:main3'
         }
     }}
 

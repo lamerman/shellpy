@@ -28,12 +28,13 @@ def preprocess_module(module_path):
     return _translate_to_temp_path(module_path)
 
 
-def preprocess_file(in_filepath, is_root_script):
+def preprocess_file(in_filepath, is_root_script, python_version=None):
     """Coverts a single shellpy file to python
 
     :param in_filepath: The path of shellpy file to be processed
     :param is_root_script: Shows whether the file being processed is a root file, which means the one
             that user executed
+    :param python_version: version of python, needed to set correct header for root scripts
     :return: The path of python file that was created of shellpy script
     """
 
@@ -49,7 +50,7 @@ def preprocess_file(in_filepath, is_root_script):
     if not os.path.exists(out_folder_path):
         os.makedirs(out_folder_path, mode=0o700)
 
-    header_data = _get_header(in_filepath, is_root_script)
+    header_data = _get_header(in_filepath, is_root_script, python_version)
 
     with open(in_filepath, 'r') as f:
         code = f.read()
@@ -128,7 +129,7 @@ def _is_compilation_needed(in_filepath, out_filepath):
     return True
 
 
-def _get_header(filepath, is_root_script):
+def _get_header(filepath, is_root_script, python_version):
     """To execute converted shellpy file we need to add a header to it. The header contains needed imports and
     required code
 
@@ -136,6 +137,7 @@ def _get_header(filepath, is_root_script):
     to the created python file. Then this modification time will be used to find out whether recompilation is needed
     :param is_root_script: Shows whether the file being processed is a root file, which means the one
             that user executed
+    :param python_version: version of python, needed to set correct header for root scripts
     :return: data of the header
     """
     header_name = 'header_root.tpl' if is_root_script else 'header.tpl'
@@ -147,6 +149,14 @@ def _get_header(filepath, is_root_script):
         meta = {'mtime': str(mod_time)}
 
         header_data = header_data.replace('{meta}', json.dumps(meta))
+
+        if is_root_script:
+            executables = {
+                2: '#!/usr/bin/env python',
+                3: '#!/usr/bin/env python3'
+            }
+            header_data = header_data.replace('#shellpy-python-executable', executables[python_version])
+
         return header_data
 
 
