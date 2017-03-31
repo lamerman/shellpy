@@ -25,20 +25,25 @@ For arguments help use:
     '''
     custom_epilog = '''github : github.com/lamerman/shellpy'''
 
-    def is_shellpy_file(fil):
-        if not re.match('.+\.spy$', fil):
-            parser.error('Shellpy can only run *.spy files')
-        return fil
+    try:
+        spy_file_index = next(index for index, arg in enumerate(sys.argv) if re.match('.+\.spy$', arg))
+        shellpy_args = sys.argv[1:spy_file_index]
+        script_args = sys.argv[spy_file_index + 1:]
+    except StopIteration:
+        shellpy_args = sys.argv[1:]
+        spy_file_index = None
 
     parser = ArgumentParser(description='A tool for convenient shell scripting in python',
                             usage=custom_usage, epilog=custom_epilog)
-    parser.add_argument('file', help='path to spy file', type=is_shellpy_file)
     parser.add_argument('-v', '--verbose', help='increase output verbosity. Always print the command being executed',
                         action="store_true")
     parser.add_argument('-vv', help='even bigger output verbosity. All stdout and stderr of executed commands is '
                                     'printed', action="store_true")
 
-    shellpy_args, unknown_args = parser.parse_known_args()
+    shellpy_args, _ = parser.parse_known_args(shellpy_args)
+
+    if spy_file_index is None:
+        exit('No *.spy file was specified. Only *.spy files are supported by the tool.')
 
     if shellpy_args.verbose or shellpy_args.vv:
         config.PRINT_ALL_COMMANDS = True
@@ -47,11 +52,7 @@ For arguments help use:
         config.PRINT_STDOUT_ALWAYS = True
         config.PRINT_STDERR_ALWAYS = True
 
-    filename = shellpy_args.file
-    filename_index = sys.argv.index(filename)
-    # remove script arguments given before script name
-    # comment out if want to keep them
-    script_args = [x for x in unknown_args if x not in sys.argv[:filename_index]]
+    filename = sys.argv[spy_file_index]
 
     processed_file = preprocess_file(filename, is_root_script=True, python_version=python_version)
 

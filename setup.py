@@ -18,12 +18,12 @@ except ImportError:
 
 
 setup(name='shellpy',
-      version='0.5.0',
+      version='0.5.1',
       description='A convenient tool for shell scripting in python',
       author='Alexander Ponomarev',
       author_email='alexander996@yandex.ru',
       url='https://github.com/lamerman/shellpy/',
-      download_url='https://github.com/lamerman/shellpy/tarball/0.5.0',
+      download_url='https://github.com/lamerman/shellpy/tarball/0.5.1',
       keywords=['shell', 'bash', 'sh'],
       packages=['shellpython'],
       package_data={'shellpython': ['*.tpl']},
