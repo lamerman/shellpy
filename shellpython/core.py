@@ -138,7 +138,7 @@ class InteractiveResult:
     To get the result as string use str(Result)
     To get lines use the Result.lines field
     You can also iterate over lines of result like this: for line in Result:
-    You can compaire two results that will mean compaire of result strings
+    You can compare two results that will mean compare of result strings
     """
     def __init__(self, process, params):
         self._process = process
@@ -183,7 +183,7 @@ class Result:
     You can access underlying lines of result streams as Result.stdout_lines Result.stderr_lines.
     E.g. line_two = Result.stdout_lines[2]
 
-    You can also compaire two results that will mean compaire of result stdouts
+    You can also compare two results that will mean compare of result stdouts
     """
     def __init__(self):
         self._stdout_lines = []
