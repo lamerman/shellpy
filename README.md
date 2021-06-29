@@ -1,9 +1,6 @@
 # shellpy
 A tool for convenient shell scripting in Python. It allows you to write all your shell scripts in Python in a convenient way and in many cases replace Bash/Sh. 
 
-[![Build Status](https://travis-ci.org/lamerman/shellpy.svg?branch=master)](https://travis-ci.org/lamerman/shellpy)
-[![Join the chat at https://gitter.im/lamerman/shellpy](https://badges.gitter.im/lamerman/shellpy.svg)](https://gitter.im/lamerman/shellpy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 ## Preface - Why do we need shell python?
 
 For many people bash/sh seem to be pretty complicated. An example would be regular expressions, working with json/yaml/xml, named arguments parsing and so on. There are many things that are much easier in python to understand and work with.
