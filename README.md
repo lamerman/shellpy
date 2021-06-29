@@ -28,7 +28,7 @@ and long lines
       a very long \
       line
 
-Every shellpy exression returns a Result
+Every shellpy expression returns a Result
 
     result = `ls -l
     

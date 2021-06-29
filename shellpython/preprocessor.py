@@ -163,7 +163,7 @@ def _get_header(filepath, is_root_script, python_version):
 def _preprocess_code_to_intermediate(code):
     """Before compiling to actual python code all expressions are converted to universal intermediate form
     It is very convenient as it is possible to perform common operations for all expressions
-    The intemediate form looks like this:
+    The intermediate form looks like this:
     longline_shexe(echo 1)shexe(p)shexe
 
     :param code: code to convert to intermediate form
