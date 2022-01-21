@@ -61,7 +61,10 @@ For arguments help use:
     new_env['PYTHONPATH'] = new_env.get("PYTHONPATH", '') + os.pathsep + os.path.dirname(filename)
     new_env[SHELLPY_PARAMS] = config.dumps()
 
-    retcode = subprocess.call(processed_file + ' ' + ' '.join(script_args), shell=True, env=new_env)
+    root_command = processed_file
+    if sys.platform == "win32":
+        root_command = "python " + root_command
+    retcode = subprocess.call(root_command + ' ' + ' '.join(script_args), shell=True, env=new_env)
     exit(retcode)
 
 
